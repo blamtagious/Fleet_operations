@@ -29,8 +29,17 @@ QUOTES_DIR = os.path.join(DATA_DIR, "quotes")
 UPFIT_DIR = os.path.join(DATA_DIR, "upfit")
 CONFIG_DIR = os.path.join(DATA_DIR, "config")
 
-PRICING_XLSX = os.path.join(REF_DIR, "TT_Murfreesboro Ford Pricing.xlsx")
-FIN_XLSX = os.path.join(REF_DIR, "FIN Codes.xlsx")
+def _ref(*names: str) -> str:
+    """First reference file that exists; uploads often swap spaces for underscores."""
+    for n in names:
+        p = os.path.join(REF_DIR, n)
+        if os.path.isfile(p):
+            return p
+    return os.path.join(REF_DIR, names[0])
+
+
+PRICING_XLSX = _ref("TT_Murfreesboro Ford Pricing.xlsx", "TT_Murfreesboro_Ford_Pricing.xlsx")
+FIN_XLSX = _ref("FIN Codes.xlsx", "FIN_Codes.xlsx")
 
 # Seller list and dealer details ship with the app, but a deployment can
 # override them by dropping the same files into the data volume's config/.

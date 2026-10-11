@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# runtime data (lives on the Railway volume, not in git)
+quotes/
+upfit/
+config/users.json
+*.xlsx
+Backups/

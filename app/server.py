@@ -117,6 +117,42 @@ __ERR__
 </form></body></html>"""
 
 
+UPLOAD_PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reference files | Fleet Quote Builder</title><style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+ background:#f2f4f7;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#10141a}
+.card{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:520px;box-shadow:0 8px 30px rgba(16,26,38,.1)}
+h1{font-size:20px;margin:0 0 6px}p{margin:0 0 18px;color:#4a5663}
+.row{border:1px dashed #b8c2cc;border-radius:10px;padding:14px;margin-bottom:12px}
+.row b{display:block}.st{font-size:13px;margin:2px 0 8px}.ok{color:#0a6f39}.no{color:#a45c06}
+button{background:#00274d;color:#fff;border:0;border-radius:8px;padding:9px 16px;font:inherit;cursor:pointer}
+a{color:#0a5fb4}.msg{margin-top:10px;font-size:14px}
+</style></head><body><div class="card">
+<h1>Reference files</h1>
+<p>The two spreadsheets the quote builder prices from. Choose a file to replace what is on the server.</p>
+__ROWS__
+<div class="msg" id="msg"></div>
+<p style="margin-top:16px"><a href="/">Back to the quote builder</a></p>
+</div><script>
+async function up(kind){
+  const f=document.getElementById('f_'+kind).files[0], m=document.getElementById('msg');
+  if(!f){m.textContent='Choose a file first.';return;}
+  m.textContent='Uploading '+f.name+'...';
+  const r=await fetch('/api/ref-upload?kind='+kind,{method:'POST',body:f});
+  const j=await r.json().catch(()=>({ok:false,error:'Unexpected reply'}));
+  m.textContent=j.ok?'Saved. Reload the quote builder.':'Failed: '+j.error;
+  if(j.ok) setTimeout(()=>location.reload(),900);
+}
+</script></body></html>"""
+
+REF_FILES = {
+    "pricing": ("State bid pricing (TT Murfreesboro Ford Pricing.xlsx)", lambda: config.PRICING_XLSX),
+    "fin": ("FIN codes (FIN Codes.xlsx)", lambda: config.FIN_XLSX),
+}
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "FleetQuote/1.0"
 
@@ -236,6 +272,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._static("index.html")
             if path.startswith("/static/"):
                 return self._static(path[len("/static/"):])
+            if path == "/upload":
+                return self._upload_page()
             if path == "/api/bootstrap":
                 return self._json(
                     {
@@ -287,6 +325,11 @@ class Handler(BaseHTTPRequestHandler):
             return self._do_account()
         if not self._gate(path):
             return
+        if path == "/api/ref-upload":
+            try:
+                return self._ref_upload()
+            except Exception as exc:  # a legible message beats a dropped connection
+                return self._err(f"{type(exc).__name__}: {exc}", 500)
         try:
             data = self._body()
             if path == "/api/parse-spec":
@@ -414,6 +457,41 @@ class Handler(BaseHTTPRequestHandler):
             f"fq_session={token}; Path=/; Max-Age={auth.SESSION_DAYS * 86400}; "
             f"HttpOnly; SameSite=Lax{secure}",
         )
+
+    def _upload_page(self):
+        rows = []
+        for kind, (label, getter) in REF_FILES.items():
+            path = getter()
+            if os.path.isfile(path):
+                st = f'<div class="st ok">On the server ({os.path.getsize(path) // 1024} KB)</div>'
+            else:
+                st = '<div class="st no">Missing</div>'
+            rows.append(
+                f'<div class="row"><b>{html_escape(label)}</b>{st}'
+                f'<input type="file" id="f_{kind}" accept=".xlsx"> '
+                f'<button onclick="up(\'{kind}\')">Upload</button></div>'
+            )
+        return self._send(200, UPLOAD_PAGE.replace("__ROWS__", "\n".join(rows)),
+                          "text/html; charset=utf-8")
+
+    def _ref_upload(self):
+        kind = (urllib.parse.parse_qs(self.path.partition("?")[2]).get("kind") or [""])[0]
+        if kind not in REF_FILES:
+            return self._err("Unknown file type.")
+        n = int(self.headers.get("Content-Length") or 0)
+        if n <= 0 or n > MAX_UPLOAD:
+            return self._err("Empty or too large a file.")
+        blob = self.rfile.read(n)
+        if blob[:2] != b"PK":
+            return self._err("That is not an .xlsx workbook.")
+        dest = REF_FILES[kind][1]()
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        tmp = dest + ".part"
+        with open(tmp, "wb") as f:
+            f.write(blob)
+        os.replace(tmp, dest)
+        (pricing if kind == "pricing" else finlookup).load(force=True)
+        return self._json({"ok": True})
 
     def _static(self, rel):
         rel = posixpath.normpath(rel).lstrip("./")
