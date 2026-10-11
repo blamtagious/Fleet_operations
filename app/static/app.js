@@ -181,6 +181,7 @@ function renderVehicle() {
 }
 
 function renderOptions() {
+  $('#opt_lump').checked = !!Q.options_lump;
   const rows = (Q.options || []).map((o, i) => `
     <tr class="${o.include ? '' : 'off'}">
       <td class="c"><input type="checkbox" data-opt="${i}" data-k="include" ${o.include ? 'checked' : ''} style="width:auto"></td>
@@ -286,6 +287,7 @@ document.addEventListener('change', e => {
   if (e.target.id === 'q_year') Q.contract_year = e.target.value;
 });
 
+$('#opt_lump').onchange = e => { Q.options_lump = e.target.checked; recalc(); };
 $('#add_opt').onclick = () => { Q.options.push({ code: '', description: '', price: 0, include: true, flags: [] }); renderOptions(); };
 $('#add_upfit').onclick = () => { Q.upfits.push({ code: '', description: '', price: 0, include: true }); renderUpfits(); };
 $('#add_adj').onclick = () => { Q.adjustments.push({ label: '', amount: 0 }); renderAdjustments(); };
