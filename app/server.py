@@ -35,7 +35,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from lib import (auth, build, config, finlookup, identity, pricing,  # noqa: E402
+from lib import (accessories, auth, build, config, finlookup, identity, pricing,  # noqa: E402
                  render, specparse, store)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -133,6 +133,10 @@ a{color:#0a5fb4}.msg{margin-top:10px;font-size:14px}
 <h1>Reference files</h1>
 <p>The two spreadsheets the quote builder prices from. Choose a file to replace what is on the server.</p>
 __ROWS__
+<div class="row"><b>Ford Accessories catalog (parts department sheet)</b>
+<div class="st __ACCCLS__">__ACCST__</div>
+<input type="file" id="f_acc" accept=".xlsx"> <button onclick="importAcc()">Import</button>
+<div class="st" style="margin-top:8px">Adds every priced bed cover, running board and floor liner to the upfit library, so they show up as suggestions on matching trucks. Uploading a newer sheet updates prices and removes dropped parts.</div></div>
 <div class="msg" id="msg"></div>
 <p style="margin-top:16px"><a href="/">Back to the quote builder</a></p>
 </div><script>
@@ -144,6 +148,16 @@ async function up(kind){
   const j=await r.json().catch(()=>({ok:false,error:'Unexpected reply'}));
   m.textContent=j.ok?'Saved. Reload the quote builder.':'Failed: '+j.error;
   if(j.ok) setTimeout(()=>location.reload(),900);
+}
+async function importAcc(){
+  const f=document.getElementById('f_acc').files[0], m=document.getElementById('msg');
+  if(!f){m.textContent='Choose the accessories workbook first.';return;}
+  m.textContent='Importing...';
+  const r=await fetch('/api/accessories-import',{method:'POST',body:f});
+  const j=await r.json().catch(()=>({ok:false,error:'Unexpected reply'}));
+  m.innerHTML=j.ok?('Imported '+j.imported+' parts'+(j.removed?', removed '+j.removed+' old':'')+'.'+
+    (j.warnings.length?'<br><b>Check the sheet:</b><br>'+j.warnings.join('<br>'):'')):'Failed: '+j.error;
+  if(j.ok&&!j.warnings.length) setTimeout(()=>location.reload(),1200);
 }
 </script></body></html>"""
 
@@ -325,9 +339,9 @@ class Handler(BaseHTTPRequestHandler):
             return self._do_account()
         if not self._gate(path):
             return
-        if path == "/api/ref-upload":
+        if path in ("/api/ref-upload", "/api/accessories-import"):
             try:
-                return self._ref_upload()
+                return self._ref_upload() if path == "/api/ref-upload" else self._accessories_import()
             except Exception as exc:  # a legible message beats a dropped connection
                 return self._err(f"{type(exc).__name__}: {exc}", 500)
         try:
@@ -471,8 +485,30 @@ class Handler(BaseHTTPRequestHandler):
                 f'<input type="file" id="f_{kind}" accept=".xlsx"> '
                 f'<button onclick="up(\'{kind}\')">Upload</button></div>'
             )
-        return self._send(200, UPLOAD_PAGE.replace("__ROWS__", "\n".join(rows)),
-                          "text/html; charset=utf-8")
+        n = sum(1 for u in store.list_upfits() if u.get("upfitter") == accessories.UPFITTER)
+        page = (UPLOAD_PAGE.replace("__ROWS__", "\n".join(rows))
+                .replace("__ACCCLS__", "ok" if n else "no")
+                .replace("__ACCST__", f"{n} parts in the library" if n else "Not imported yet"))
+        return self._send(200, page, "text/html; charset=utf-8")
+
+    def _accessories_import(self):
+        n = int(self.headers.get("Content-Length") or 0)
+        if n <= 0 or n > MAX_UPLOAD:
+            return self._err("Empty or too large a file.")
+        blob = self.rfile.read(n)
+        if blob[:2] != b"PK":
+            return self._err("That is not an .xlsx workbook.")
+        os.makedirs(STAGING, exist_ok=True)
+        tmp = os.path.join(STAGING, "accessories.xlsx")
+        with open(tmp, "wb") as f:
+            f.write(blob)
+        try:
+            res = accessories.import_workbook(tmp)
+        finally:
+            os.remove(tmp)
+        if not res["imported"]:
+            return self._err("No priced rows found. Expected the BED COVERS, RUNNING BOARDS and FLOOR MATS sheets.")
+        return self._json({"ok": True, **res})
 
     def _ref_upload(self):
         kind = (urllib.parse.parse_qs(self.path.partition("?")[2]).get("kind") or [""])[0]

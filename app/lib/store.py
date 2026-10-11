@@ -197,6 +197,22 @@ UPFIT_TEMPLATE = {
 }
 
 
+_FAMILIES = (
+    ("Bronco Sport", r"bronco\s+sport"), ("Bronco", r"bronco"), ("Expedition", r"expedition"),
+    ("Explorer", r"explorer"), ("Mustang", r"mustang"), ("Maverick", r"maverick"),
+    ("Ranger", r"ranger"), ("Transit", r"transit"),
+    ("Super Duty", r"super\s*duty|\bf-?[2-7]\d0\b|\bsd\b"), ("F-150", r"f-?150"),
+)
+
+
+def model_family(text: str) -> str:
+    """'2027 F-250 4x4 SD Super Cab ...' -> 'Super Duty'; '' when unrecognised."""
+    for name, pat in _FAMILIES:
+        if re.search(pat, text or "", re.I):
+            return name
+    return ""
+
+
 def upfit_dir(upfitter: str, year: str, reference: str, create=False) -> str:
     d = os.path.join(UPFIT_DIR, slug(upfitter), str(year or "undated"), slug(reference))
     if create:
@@ -216,6 +232,11 @@ def save_upfit(rec: dict, source_files: list | None = None,
     base.update({k: v for k, v in rec.items() if k in UPFIT_TEMPLATE})
     applies = dict(UPFIT_TEMPLATE["applies_to"])
     applies.update(rec.get("applies_to") or {})
+    # The edit form only knows the original fields; keep the catalog's extras.
+    prev = (load_upfit(original_id) or {}).get("applies_to", {}) if original_id else {}
+    for k in ("models", "bed", "years"):
+        if k in prev and k not in (rec.get("applies_to") or {}):
+            applies[k] = prev[k]
     base["applies_to"] = applies
 
     base["year"] = str(base.get("year") or dt.date.today().year)
@@ -408,10 +429,15 @@ def applicable_upfits(spec: dict) -> list:
     is_drw = bool(re.search(r"\bDRW\b", title, re.I))
     is_srw = bool(re.search(r"\bSRW\b", title, re.I))
     cab = ""
-    for c in ("Crew Cab", "SuperCab", "Super Cab", "Regular Cab"):
+    for c in ("Crew Cab", "SuperCrew", "SuperCab", "Super Cab", "Regular Cab"):
         if re.search(c, title, re.I):
-            cab = c
+            cab = "Crew Cab" if c == "SuperCrew" else c
             break
+    family = model_family(title)
+    ym = re.search(r"\b(20\d\d)\b", title)
+    model_year = int(ym.group(1)) if ym else None
+    bm = re.search(r"(\d+(?:\.\d+)?)\s*['\u2019]?\s*(?:box|bed)\b", title, re.I)
+    title_bed = float(bm.group(1)) if bm else None
     wbs = _wb_tokens(title)
 
     out = []
@@ -450,9 +476,29 @@ def applicable_upfits(spec: dict) -> list:
             elif wbs:
                 conflict = True
 
+        models = a.get("models") or []
+        if models and family:
+            if family in models:
+                score += 6
+                why.append(family)
+            else:
+                conflict = True
+        if a.get("bed") and title_bed is not None:
+            if abs(float(a["bed"]) - title_bed) < 0.01:
+                score += 3
+                why.append(f"{a['bed']}' bed")
+            else:
+                conflict = True
+        yrs = a.get("years") or []
+        if len(yrs) == 2 and model_year:
+            if yrs[0] <= model_year <= yrs[1]:
+                score += 1
+            else:
+                conflict = True
+
         if conflict:
             continue
-        if not codes and not rec_wb and not rec_cab:
+        if not codes and not rec_wb and not rec_cab and not models:
             why.append("no chassis restriction")
 
         rec = dict(rec)
