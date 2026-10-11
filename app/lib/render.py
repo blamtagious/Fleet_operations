@@ -103,7 +103,7 @@ body { font-family: Inter, "Helvetica Neue", Helvetica, Arial, sans-serif; font-
 
 .header { display: flex; justify-content: space-between; align-items: flex-start;
           padding-bottom: 20pt; border-bottom: 0.5pt solid #d1d5db; }
-.header img { height: 58pt; width: auto; display: block; }
+.header img { height: 56pt; width: auto; display: block; }
 .title { text-align: right; }
 .title h1 { margin: 0 0 10pt; font-size: 22pt; font-weight: 300; letter-spacing: -.01em;
             color: var(--accent); }
