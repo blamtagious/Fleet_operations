@@ -91,39 +91,61 @@ def _rows(items, cols, empty_rows=0):
 
 
 CSS = """
-@page { size: Letter; margin: 0.5in 0.6in; }
+@page { size: Letter; margin: 0.6in 0.75in; }
+:root { --ink:#1f2937; --muted:#6b7280; --faint:#9ca3af; --panel:#f3f4f6; --accent:#00095b; }
 * { box-sizing: border-box; }
-body { font-family: Arial, Helvetica, sans-serif; font-size: 9.5pt; color: #000;
-       margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.header { display: flex; align-items: flex-start; justify-content: space-between; }
-.header img { width: 260px; height: auto; }
-.title { font-size: 26pt; letter-spacing: .5px; margin: 6pt 0 0 0; text-align: right; }
-.meta { margin-top: 6pt; display: flex; justify-content: space-between; align-items: flex-start; }
-.dealer { line-height: 1.35; }
-.boxes { width: 300px; }
-table.kv { border-collapse: collapse; width: 100%; margin-bottom: 10pt; }
-table.kv td { border: 1px solid #000; padding: 2pt 5pt; height: 16pt; }
-table.kv td.k { width: 92px; font-size: 9pt; }
-.quotedby { border: 1px solid #000; padding: 4pt 5pt; line-height: 1.35; }
-.quotedby .lbl { text-decoration: underline; display: block; margin-bottom: 2pt;
-                 border-bottom: 1px solid #000; margin: -4pt -5pt 4pt -5pt; padding: 2pt 5pt; }
-h2.sec { background: #000; color: #fff; font-size: 10pt; font-weight: bold;
-         margin: 16pt 0 0 0; padding: 3pt 6pt; }
-table.grid { border-collapse: collapse; width: 100%; }
-table.grid th, table.grid td { border: 1px solid #000; padding: 3pt 5pt; vertical-align: top; }
-table.grid th { font-size: 9pt; font-weight: normal; text-align: center; }
-td.line, th.line { width: 52px; text-align: center; }
-td.price, th.price { width: 118px; text-align: right; }
-td.desc .code { color: #444; font-size: 8pt; }
-tr.tot td { border: none; padding: 3pt 5pt; }
-tr.tot td.lbl { text-align: right; font-weight: bold; }
-tr.tot td.val { text-align: right; width: 118px; border-top: 1px solid #000; font-weight: bold; }
-tr.sub td.val { font-weight: normal; }
-.totals { margin-top: 8pt; width: 100%; border-collapse: collapse; }
-.notes { margin-top: 18pt; font-size: 8pt; line-height: 1.45; }
-.sign { margin-top: 30pt; display: flex; gap: 40px; }
-.sign div { flex: 1; border-top: 1px solid #000; padding-top: 3pt; font-size: 8.5pt; }
-.small { font-size: 8pt; color: #333; }
+body { font-family: Inter, "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10pt;
+       line-height: 1.45; color: var(--ink); margin: 0;
+       -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.label { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+         color: var(--muted); margin: 0 0 3pt; }
+.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+
+.header { display: flex; justify-content: space-between; align-items: flex-start;
+          padding-bottom: 20pt; border-bottom: 0.5pt solid #d1d5db; }
+.header img { height: 58pt; width: auto; display: block; }
+.title { text-align: right; }
+.title h1 { margin: 0 0 10pt; font-size: 22pt; font-weight: 300; letter-spacing: -.01em;
+            color: var(--accent); }
+.meta { display: inline-grid; grid-template-columns: auto auto; gap: 2pt 18pt; text-align: left; margin: 0; }
+.meta dt { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+           color: var(--muted); align-self: center; }
+.meta dd { margin: 0; font-weight: 500; text-align: right; }
+
+.parties { display: grid; grid-template-columns: 1fr 1fr; gap: 0 36pt; margin-top: 22pt; }
+.parties p { margin: 0; }
+.parties .name { font-weight: 600; }
+.parties .sub { color: var(--muted); }
+
+table.items { width: 100%; border-collapse: collapse; margin-top: 28pt; }
+table.items th { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+                 color: var(--muted); text-align: left; padding: 0 0 6pt; }
+table.items th.num { text-align: right; }
+table.items td { padding: 7pt 0; vertical-align: top; }
+table.items tr { break-inside: avoid; }
+td.line { width: 34pt; color: var(--faint); }
+tr.group td { padding: 16pt 0 2pt; font-size: 7.5pt; font-weight: 600; letter-spacing: .08em;
+              text-transform: uppercase; color: var(--muted); }
+.item { font-weight: 600; }
+.spec { color: var(--muted); font-size: 8.5pt; }
+.code { color: var(--faint); font-weight: 400; }
+
+.totals { margin: 20pt 0 0 auto; width: 260pt; break-inside: avoid; }
+.totals .row { display: flex; justify-content: space-between; padding: 3pt 12pt; }
+.totals .row > span:first-child { color: var(--muted); }
+.totals .grand { margin-top: 6pt; padding: 10pt 12pt; background: var(--panel); border-radius: 4pt;
+                 align-items: baseline; }
+.totals .grand > span:first-child { font-size: 8pt; font-weight: 600; letter-spacing: .08em;
+                                    text-transform: uppercase; color: var(--ink); }
+.totals .grand > span:last-child { font-size: 15pt; font-weight: 700; color: var(--accent);
+                                   font-variant-numeric: tabular-nums; }
+
+.notes { margin-top: 26pt; font-size: 8pt; line-height: 1.5; color: var(--muted); max-width: 5.6in; }
+.accept { margin-top: 36pt; display: grid; grid-template-columns: 1fr 1fr; gap: 0 36pt;
+          break-inside: avoid; }
+.field { border-bottom: 0.5pt solid var(--faint); height: 30pt; }
+.accept .label { margin-top: 5pt; }
+.foot { margin-top: 24pt; font-size: 7.5pt; color: var(--faint); }
 """
 
 
@@ -138,61 +160,76 @@ def render_html(q: dict) -> str:
     opts = q.get("options") or []
     upfits = q.get("upfits") or []
 
-    veh_rows = _rows(
-        veh_items,
-        [
-            ("Line", "line", lambda i: e(i.get("line", ""))),
-            ("Description", "desc", lambda i: (
-                f'<strong>{e(i.get("description",""))}</strong>'
-                + (f'<div class="code">{e(i.get("detail",""))}</div>' if i.get("detail") else "")
-            )),
-            ("Price", "price", lambda i: money(i.get("price"))),
-        ],
-        empty_rows=max(0, 1 - len(veh_items)),
+    veh_rows = "\n".join(
+        '<tr><td class="line">{line}</td><td><div class="item">{desc}</div>{detail}</td>'
+        '<td class="num">{price}</td></tr>'.format(
+            line=e(i.get("line", "")),
+            desc=e(i.get("description", "")),
+            detail=f'<div class="spec">{e(i.get("detail",""))}</div>' if i.get("detail") else "",
+            price=money(i.get("price")),
+        )
+        for i in veh_items
     )
 
     acc = [i for i in (list(opts) + list(upfits)) if i.get("include", True)]
-    acc_rows = _rows(
-        acc,
-        [
-            ("Description", "desc", lambda i: (
-                e(i.get("description", ""))
-                + (f' <span class="code">({e(i.get("code",""))})</span>' if i.get("code") else "")
-            )),
-            ("Price", "price", lambda i: money(i.get("price"))),
-        ],
-        empty_rows=max(0, 1 - len(acc)),
+    acc_rows = "\n".join(
+        '<tr><td class="line"></td><td>{desc}{code}</td><td class="num">{price}</td></tr>'.format(
+            desc=e(i.get("description", "")),
+            code=f' <span class="code">({e(i.get("code",""))})</span>' if i.get("code") else "",
+            price=money(i.get("price")),
+        )
+        for i in acc
+    )
+    acc_block = (
+        '<tr class="group"><td colspan="3">Options &amp; Accessories</td></tr>\n' + acc_rows
+        if acc else ""
     )
 
     # Skip blank contact lines rather than printing empty rows on the quote.
-    seller_lines = []
-    who = e(s.get("name", ""))
-    if s.get("title"):
-        who = f"{who} - {e(s['title'])}" if who else e(s["title"])
-    for line in (who, e(s.get("email", "")), e(s.get("phone", ""))):
-        if line.strip():
-            seller_lines.append(line)
-    seller_block = "<br>\n      ".join(seller_lines) or "&nbsp;"
+    seller_name = e(s.get("name", ""))
+    seller_lines = [
+        f'<p class="name">{seller_name}</p>' if seller_name else "",
+        f'<p class="sub">{e(s["title"])}</p>' if s.get("title") else "",
+        f'<p class="sub">{e(s["email"])}</p>' if s.get("email") else "",
+        f'<p class="sub">{e(s["phone"])}</p>' if s.get("phone") else "",
+    ]
+    seller_block = "\n      ".join(x for x in seller_lines if x)
 
-    qty = int(v.get("quantity") or 1)
-    qty_block = ""
-    if qty > 1:
-        qty_block = (
-            f'<tr class="tot"><td class="lbl">Unit Total</td>'
-            f'<td class="val">{money(t.get("unit_total"))}</td></tr>'
-            f'<tr class="tot"><td class="lbl">Quantity</td>'
-            f'<td class="val">{qty}</td></tr>'
-        )
+    def row(label, value, cls=""):
+        return f'<div class="row {cls}"><span>{label}</span><span class="num">{value}</span></div>'
 
-    extra_rows = ""
-    for row in q.get("adjustments") or []:
-        extra_rows += (
-            f'<tr class="tot sub"><td class="lbl">{e(row.get("label"))}</td>'
-            f'<td class="val">{money(row.get("amount"))}</td></tr>'
-        )
+    total_rows = [
+        row("Vehicle", money(t.get("vehicle"))),
+        row("Options &amp; Accessories", money(t.get("options"))),
+    ]
+    if t.get("upfitting"):
+        total_rows.append(row("Upfitting", money(t.get("upfitting"))))
+    if t.get("destination"):
+        total_rows.append(row("Destination", money(t.get("destination"))))
+    for adj in q.get("adjustments") or []:
+        total_rows.append(row(e(adj.get("label")), money(adj.get("amount"))))
+    if int(v.get("quantity") or 1) > 1:
+        total_rows.append(row("Unit Total", money(t.get("unit_total"))))
+        total_rows.append(row("Quantity", int(v.get("quantity"))))
+    total_rows.append(
+        f'<div class="row grand"><span>Total</span><span>{money(t.get("grand_total"))}</span></div>'
+    )
 
+    contact = e(c.get("name", ""))
+    if c.get("title"):
+        contact += f", {e(c.get('title'))}"
     fin = c.get("fin", "")
-    fin_row = f'<tr><td class="k">FIN Code</td><td>{e(fin)}</td></tr>' if fin else ""
+    cust_lines = [
+        f'<p class="name">{e(c.get("org", ""))}</p>',
+        f'<p class="sub">{contact}</p>' if contact else "",
+        f'<p class="sub">FIN Code {e(fin)}</p>' if fin else "",
+    ]
+    cust_block = "\n      ".join(x for x in cust_lines if x)
+
+    foot = " · ".join(
+        x for x in (e(d.get("name", "Ford of Murfreesboro")), e(d.get("address1", "")),
+                    e(d.get("address2", ""))) if x
+    )
 
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
@@ -201,62 +238,47 @@ def render_html(q: dict) -> str:
 
 <div class="header">
   <img src="{_logo_data_uri()}" alt="Ford of Murfreesboro / Ford Pro">
-  <div style="flex:1"><h1 class="title">SALES QUOTE</h1></div>
-</div>
-
-<div class="meta">
-  <div class="dealer">
-    <strong>{e(d.get('name','Ford of Murfreesboro'))}</strong><br>
-    {e(d.get('address1',''))}<br>
-    {e(d.get('address2',''))}
-  </div>
-  <div class="boxes">
-    <table class="kv">
-      <tr><td class="k">Quote Date</td><td>{e(q.get('quote_date',''))}</td></tr>
-      <tr><td class="k">Quote ID</td><td>{e(q.get('quote_id',''))}</td></tr>
-    </table>
-    <div class="quotedby">
-      <span class="lbl">Quoted By:</span>
-      {seller_block}
-    </div>
+  <div class="title">
+    <h1>Sales Quote</h1>
+    <dl class="meta">
+      <dt>Quote ID</dt><dd>{e(q.get('quote_id',''))}</dd>
+      <dt>Date</dt><dd>{e(q.get('quote_date',''))}</dd>
+    </dl>
   </div>
 </div>
 
-<h2 class="sec">Customer</h2>
-<table class="grid">
-  <tr><td class="k" style="width:92px">Organization</td><td>{e(c.get('org',''))}</td></tr>
-  <tr><td class="k">Contact</td><td>{e(c.get('name',''))}{', ' + e(c.get('title','')) if c.get('title') else ''}</td></tr>
-  {fin_row}
+<div class="parties">
+  <div>
+    <p class="label">Prepared for</p>
+    {cust_block}
+  </div>
+  <div>
+    <p class="label">Prepared by</p>
+    {seller_block}
+  </div>
+</div>
+
+<table class="items">
+  <thead><tr><th>#</th><th>Description</th><th class="num">Price</th></tr></thead>
+  <tbody>
+    <tr class="group"><td colspan="3">Vehicle</td></tr>
+    {veh_rows}
+    {acc_block}
+  </tbody>
 </table>
 
-<h2 class="sec">Vehicle Information</h2>
-<table class="grid">
-  <tr><th class="line">Line</th><th>Description</th><th class="price">Price</th></tr>
-  {veh_rows}
-</table>
-
-<h2 class="sec">Options &amp; Accessories</h2>
-<table class="grid">
-  <tr><th>Description</th><th class="price">Price</th></tr>
-  {acc_rows}
-</table>
-
-<table class="totals">
-  <tr class="tot sub"><td class="lbl">Vehicle</td><td class="val">{money(t.get('vehicle'))}</td></tr>
-  <tr class="tot sub"><td class="lbl">Options &amp; Accessories</td><td class="val">{money(t.get('options'))}</td></tr>
-  {f'<tr class="tot sub"><td class="lbl">Upfitting</td><td class="val">{money(t.get("upfitting"))}</td></tr>' if t.get('upfitting') else ''}
-  {f'<tr class="tot sub"><td class="lbl">Destination</td><td class="val">{money(t.get("destination"))}</td></tr>' if t.get('destination') else ''}
-  {extra_rows}
-  {qty_block}
-  <tr class="tot"><td class="lbl">TOTAL</td><td class="val">{money(t.get('grand_total'))}</td></tr>
-</table>
+<div class="totals">
+  {"".join(total_rows)}
+</div>
 
 <div class="notes">{e(q.get('notes',''))}</div>
 
-<div class="sign">
-  <div>Customer Signature</div>
-  <div>Acceptance Date</div>
+<div class="accept">
+  <div><div class="field"></div><p class="label">Customer signature</p></div>
+  <div><div class="field"></div><p class="label">Acceptance date</p></div>
 </div>
+
+<div class="foot">{foot}</div>
 
 </body></html>"""
 
