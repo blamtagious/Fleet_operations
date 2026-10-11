@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ quote_id }} — Sales Quote</title>
+<style>
+  @page { size: letter; margin: 0; }
+  :root {
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --faint: #9ca3af;
+    --panel: #f3f4f6;
+    --accent: #00095b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.45;
+    color: var(--ink);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    width: 8.5in; height: 11in;
+    padding: 0.7in 0.75in 0.6in;
+    display: flex; flex-direction: column;
+  }
+  .label {
+    font-size: 7.5pt; font-weight: 600; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--muted);
+    margin: 0 0 3pt;
+  }
+  .num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+
+  /* Header */
+  header { display: flex; justify-content: space-between; align-items: flex-start;
+           padding-bottom: 22pt; border-bottom: 0.5pt solid #d1d5db; }
+  header img { height: 58pt; display: block; }
+  .title { text-align: right; }
+  .title h1 { margin: 0 0 10pt; font-size: 22pt; font-weight: 300; letter-spacing: -.01em; color: var(--accent); }
+  .meta { display: inline-grid; grid-template-columns: auto auto; gap: 2pt 18pt; text-align: left; }
+  .meta dt { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); align-self: center; }
+  .meta dd { margin: 0; font-weight: 500; text-align: right; }
+
+  /* Parties */
+  .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 0 36pt; margin-top: 24pt; }
+  .parties p { margin: 0; }
+  .parties .name { font-weight: 600; }
+  .parties .sub { color: var(--muted); }
+  .parties dl { margin: 0; display: grid; grid-template-columns: 70pt 1fr; gap: 1pt 0; }
+  .parties dt { color: var(--muted); }
+  .parties dd { margin: 0; }
+
+  /* Line items */
+  table { width: 100%; border-collapse: collapse; margin-top: 30pt; }
+  th { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+       color: var(--muted); text-align: left; padding: 0 0 6pt; }
+  th.num { text-align: right; }
+  td { padding: 8pt 0; vertical-align: top; }
+  td.line { width: 34pt; color: var(--faint); }
+  tr.group td { padding: 18pt 0 2pt; font-size: 7.5pt; font-weight: 600; letter-spacing: .08em;
+                text-transform: uppercase; color: var(--muted); }
+  .item { font-weight: 600; }
+  .spec { color: var(--muted); font-size: 8.5pt; }
+  .code { color: var(--faint); font-weight: 400; }
+
+  /* Totals */
+  .totals { margin: 22pt 0 0 auto; width: 250pt; }
+  .totals .row { display: flex; justify-content: space-between; padding: 3pt 12pt; }
+  .totals .row span:first-child { color: var(--muted); }
+  .totals .grand { margin-top: 6pt; padding: 10pt 12pt; background: var(--panel); border-radius: 4pt;
+                   align-items: baseline; }
+  .totals .grand span:first-child { font-size: 8pt; font-weight: 600; letter-spacing: .08em;
+                                    text-transform: uppercase; color: var(--ink); }
+  .totals .grand span:last-child { font-size: 15pt; font-weight: 700; color: var(--accent);
+                                   font-variant-numeric: tabular-nums; }
+
+  .terms { margin-top: 30pt; font-size: 8pt; line-height: 1.5; color: var(--muted); max-width: 5.6in; }
+
+  /* Acceptance */
+  .accept { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 0 36pt; }
+  .field { border-bottom: 0.5pt solid var(--faint); height: 30pt; }
+  .accept .label { margin-top: 5pt; }
+
+  footer { margin-top: 26pt; display: flex; justify-content: space-between;
+           font-size: 7.5pt; color: var(--faint); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <img src="assets/logo.png" alt="Ford of Murfreesboro · Ford Pro">
+    <div class="title">
+      <h1>Sales Quote</h1>
+      <dl class="meta">
+        <dt>Quote ID</dt><dd>{{ quote_id }}</dd>
+        <dt>Date</dt><dd>{{ quote_date }}</dd>
+      </dl>
+    </div>
+  </header>
+
+  <section class="parties">
+    <div>
+      <p class="label">Prepared for</p>
+      <p class="name">{{ customer.organization }}</p>
+      <p class="sub">{{ customer.contact }}</p>
+      <p class="sub">FIN Code {{ customer.fin_code }}</p>
+    </div>
+    <div>
+      <p class="label">Prepared by</p>
+      <p class="name">{{ rep.name }}</p>
+      <p class="sub">{{ rep.title }}</p>
+      <p class="sub">{{ rep.email }}</p>
+      <p class="sub">{{ rep.phone }}</p>
+    </div>
+  </section>
+
+  <table>
+    <thead>
+      <tr><th>#</th><th>Description</th><th class="num">Price</th></tr>
+    </thead>
+    <tbody>
+      <tr class="group"><td colspan="3">Vehicle</td></tr>
+      {% for v in vehicles %}
+      <tr>
+        <td class="line">{{ v.line }}</td>
+        <td><div class="item">{{ v.description }}</div><div class="spec">{{ v.spec }}</div></td>
+        <td class="num">{{ v.price }}</td>
+      </tr>
+      {% endfor %}
+      {% if options %}
+      <tr class="group"><td colspan="3">Options &amp; Accessories</td></tr>
+      {% for o in options %}
+      <tr>
+        <td class="line"></td>
+        <td>{{ o.description }} {% if o.code %}<span class="code">{{ o.code }}</span>{% endif %}</td>
+        <td class="num">{{ o.price }}</td>
+      </tr>
+      {% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <div class="row"><span>Vehicle</span><span class="num">{{ totals.vehicle }}</span></div>
+    <div class="row"><span>Options &amp; Accessories</span><span class="num">{{ totals.options }}</span></div>
+    <div class="row grand"><span>Total</span><span>{{ totals.total }}</span></div>
+  </div>
+
+  <p class="terms">{{ terms }}</p>
+
+  <section class="accept">
+    <div><div class="field"></div><p class="label">Customer signature</p></div>
+    <div><div class="field"></div><p class="label">Acceptance date</p></div>
+  </section>
+
+  <footer>
+    <span>Ford of Murfreesboro · 1550 NW Broad St., Murfreesboro, TN 37129</span>
+    <span>{{ quote_id }}</span>
+  </footer>
+
+</div>
+</body>
+</html>
