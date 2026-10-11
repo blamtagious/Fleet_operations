@@ -1,0 +1,24 @@
+[
+  {
+    "id": "cbaton",
+    "name": "Craig Baton",
+    "title": "Fleet Sales Manager",
+    "email": "cbaton@fordofmurfreesboro.com",
+    "phone": "(615) 243-1528",
+    "default": true
+  },
+  {
+    "id": "jwitt",
+    "name": "James Witt",
+    "title": "Fleet Sales",
+    "email": "jwitt@fordofmurfreesboro.com",
+    "phone": "(615) 542-7466"
+  },
+  {
+    "id": "jmccullough",
+    "name": "Jason McCullough",
+    "title": "Fleet Sales",
+    "email": "jmccullough@fordofmurfreesboro.com",
+    "phone": "(615) 785-9141"
+  }
+]

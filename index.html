@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fleet Quote Builder — Ford of Murfreesboro</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Fleet Quote Builder</h1>
+  <div class="tabs">
+    <button data-tab="build" class="on">Build</button>
+    <button data-tab="upfit">Upfit Library</button>
+    <button data-tab="saved">Saved Quotes</button>
+  </div>
+  <div class="sp"></div>
+  <button id="whoami" class="whoami">You: —</button>
+  <a id="account" class="signout" href="/account" style="display:none">Password</a>
+  <a id="signout" class="signout" href="/logout" style="display:none">Sign out</a>
+  <div class="paths">State of Tennessee SWC · Ford of Murfreesboro</div>
+</header>
+
+<div class="modal" id="identity" style="display:none">
+  <div class="sheet">
+    <h2>Who's using this copy?</h2>
+    <p>Your initials go into every quote number you create — <code>Q-2026-<strong>JM</strong>-0001</code> —
+       so you and the other two can quote at the same time without ever landing on the same number.
+       This is saved on this computer only, not in the shared folder.</p>
+    <div class="grid2">
+      <div class="field"><label class="f">Your initials</label>
+        <input id="id_initials" maxlength="4" placeholder="JM" style="text-transform:uppercase"></div>
+      <div class="field"><label class="f">Default "Quoted By"</label><select id="id_seller"></select></div>
+    </div>
+    <input type="hidden" id="id_force">
+    <div class="row" style="margin-top:6px">
+      <button class="btn" id="id_save">Save</button>
+      <button class="btn ghost" id="id_cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<main>
+
+<!-- ================= BUILD ================= -->
+<section class="view on" id="view-build">
+
+  <div class="drop" id="drop">
+    <h2>Drop a Ford spec proposal PDF here</h2>
+    <p>It reads the configuration, matches the State of Tennessee bid sheet, and finds the FIN code. Or click to choose a file.</p>
+    <input type="file" id="file" accept="application/pdf" multiple hidden>
+  </div>
+
+  <div id="editor" style="display:none">
+
+    <div class="panel">
+      <h3>Quote <span class="sp"></span>
+        <span id="specname" class="code"></span>
+      </h3>
+      <div class="body">
+        <div id="warnings"></div>
+        <div class="grid3">
+          <div class="field"><label class="f">Quote ID</label><input id="q_id"></div>
+          <div class="field"><label class="f">Quote Date</label><input id="q_date"></div>
+          <div class="field"><label class="f">Quoted By</label><select id="q_seller"></select></div>
+        </div>
+        <div id="sellerwarn"></div>
+        <div class="grid3">
+          <div class="field"><label class="f">Organization</label><input id="c_org"></div>
+          <div class="field"><label class="f">Contact</label><input id="c_name"></div>
+          <div class="field"><label class="f">Contact Title</label><input id="c_title"></div>
+        </div>
+        <div class="grid3">
+          <div class="field"><label class="f">FIN Code</label><input id="c_fin" autocomplete="off"><div class="ac" id="fin_ac" style="display:none"></div></div>
+          <div class="field"><label class="f">Quantity</label><input id="v_qty" class="qty" type="number" min="1" value="1"></div>
+          <div class="field"><label class="f">Contract Year</label><select id="q_year"></select></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Vehicle <span class="sp"></span><span id="bidinfo" class="code"></span></h3>
+      <div class="body">
+        <div id="pricingnote"></div>
+        <table>
+          <thead><tr><th style="width:52px">Line</th><th>Description</th><th class="r" style="width:150px">Price</th></tr></thead>
+          <tbody id="veh_rows"></tbody>
+        </table>
+        <div class="row" style="margin-top:10px">
+          <button class="btn ghost sm" id="pick_bid">Choose a different contract line…</button>
+          <span class="hint" id="bidhint"></span>
+        </div>
+        <div class="field" style="margin-top:10px;display:none" id="bidsearch_wrap">
+          <label class="f">Search the bid sheet</label>
+          <input id="bidsearch" placeholder="e.g. F-350 crew cab diesel" autocomplete="off">
+          <div class="ac" id="bid_ac" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Options &amp; Accessories <span class="sp"></span>
+        <button class="btn ghost sm" id="add_opt">+ Add line</button>
+      </h3>
+      <div class="body" style="padding:0">
+        <table>
+          <thead><tr><th class="c">Use</th><th>Description</th><th style="width:90px">Code</th>
+            <th class="r" style="width:110px">MSRP</th><th class="r" style="width:150px">Quoted</th><th class="c"></th></tr></thead>
+          <tbody id="opt_rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Upfitting <span class="sp"></span>
+        <button class="btn ghost sm" id="add_upfit">+ Add line</button>
+      </h3>
+      <div class="body">
+        <div id="upfit_suggest"></div>
+        <table>
+          <thead><tr><th class="c">Use</th><th>Description</th><th style="width:130px">Reference</th>
+            <th class="r" style="width:150px">Price</th><th class="c"></th></tr></thead>
+          <tbody id="upfit_rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Totals &amp; Notes</h3>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="field">
+              <label class="f">Notes printed on the quote</label>
+              <textarea id="q_notes"></textarea>
+            </div>
+            <div class="row">
+              <label style="font-size:13px"><input type="checkbox" id="inc_dest" style="width:auto"> Add destination charge</label>
+              <span class="hint" id="desthint"></span>
+            </div>
+            <div class="row" style="margin-top:8px">
+              <button class="btn ghost sm" id="add_adj">+ Discount / fee line</button>
+            </div>
+            <table style="margin-top:8px"><tbody id="adj_rows"></tbody></table>
+          </div>
+          <div>
+            <div class="totals" id="totals"></div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:18px">
+          <button class="btn" id="btn_pdf">Generate Quote PDF</button>
+          <button class="btn ghost" id="btn_save">Save Draft</button>
+          <button class="btn ghost" id="btn_reset">Start Over</button>
+          <span class="sp" style="flex:1"></span>
+          <span id="savedpath" class="hint"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= UPFIT LIBRARY ================= -->
+<section class="view" id="view-upfit">
+  <div class="grid2">
+    <div class="panel">
+      <h3><span id="u_mode">Add an upfitter quote</span><span class="sp"></span>
+        <button class="btn ghost sm" id="u_cancel" style="display:none">Cancel edit</button>
+      </h3>
+      <div class="body">
+        <div id="u_editing"></div>
+        <div class="drop" id="updrop" style="padding:22px">
+          <h2 style="font-size:15px">Drop the upfitter's PDF</h2>
+          <p>Attaches the source document to this library record.</p>
+          <input type="file" id="upfile" accept="application/pdf" multiple hidden>
+        </div>
+        <div id="upfiles" style="margin:8px 0"></div>
+        <div class="grid2" style="margin-top:10px">
+          <div class="field"><label class="f">Upfitter *</label><input id="u_upfitter" placeholder="Knapheide"></div>
+          <div class="field"><label class="f">Their quote ref</label><input id="u_ref" placeholder="KN-12345"></div>
+        </div>
+        <div class="field"><label class="f">Title *</label><input id="u_title" placeholder="696J 9ft steel service body, installed"></div>
+        <div class="grid3">
+          <div class="field"><label class="f">Body type</label><input id="u_body" placeholder="service body"></div>
+          <div class="field"><label class="f">Price</label><input id="u_price" class="money" style="width:100%"></div>
+          <div class="field"><label class="f">Year</label><input id="u_year"></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label class="f">Quote date</label><input id="u_qdate" placeholder="09/25/2026"></div>
+          <div class="field"><label class="f">Valid until</label><input id="u_valid" placeholder="12/31/2026"></div>
+        </div>
+
+        <h3 class="subhead">Breakdown <span class="sp"></span>
+          <button class="btn ghost sm" id="u_additem">+ Line</button></h3>
+        <p class="hint" style="margin:0 0 8px">Optional. Add lines and the price above is worked out for you.</p>
+        <table><tbody id="u_items"></tbody></table>
+
+        <h3 class="subhead">Fits which chassis?</h3>
+        <div class="grid2">
+          <div class="field"><label class="f">Model codes (comma separated)</label><input id="u_codes" placeholder="W3H, W4H"><div class="hint">Blank = fits anything</div></div>
+          <div class="field"><label class="f">Chassis description</label><input id="u_chassis" placeholder="F-350/F-450 Chassis Cab DRW"></div>
+        </div>
+        <div class="grid3">
+          <div class="field"><label class="f">Cab</label>
+            <select id="u_cab"><option value="">Any</option><option>Regular Cab</option><option>SuperCab</option><option>Crew Cab</option></select></div>
+          <div class="field"><label class="f">Wheelbase(s)</label><input id="u_wb" placeholder="179"></div>
+          <div class="field"><label class="f">Wheels</label>
+            <select id="u_drw"><option value="">Any</option><option value="true">DRW (dual)</option><option value="false">SRW (single)</option></select></div>
+        </div>
+        <div class="field"><label class="f">Notes</label><textarea id="u_notes"></textarea></div>
+        <button class="btn" id="u_save">Save to library</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Library <span class="sp"></span><span class="code" id="upcount"></span></h3>
+      <div class="body" style="padding:12px 14px 0">
+        <input id="u_search" placeholder="Search upfitter, body type, chassis…" autocomplete="off">
+      </div>
+      <div class="body" style="padding:10px 0 0" id="uplist"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SAVED ================= -->
+<section class="view" id="view-saved">
+  <div class="panel">
+    <h3>Saved quotes</h3>
+    <div class="body" style="padding:0" id="savedlist"></div>
+  </div>
+</section>
+
+</main>
+<div id="toast"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

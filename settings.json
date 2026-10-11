@@ -1,0 +1,16 @@
+{
+  "dealer": {
+    "name": "Ford of Murfreesboro",
+    "address1": "1550 NW Broad St.",
+    "address2": "Murfreesboro, TN 37129",
+    "phone": "(615) 243-1528"
+  },
+  "contract": {
+    "label": "State of Tennessee Statewide Contract",
+    "default_note": "Pricing per State of Tennessee Statewide Contract (SWC). Quote valid for 30 days unless otherwise noted. Applicable taxes, title and registration fees are not included."
+  },
+  "defaults": {
+    "quote_valid_days": 30,
+    "option_pricing_mode": "msrp"
+  }
+}
