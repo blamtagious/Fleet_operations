@@ -91,12 +91,12 @@ def _rows(items, cols, empty_rows=0):
 
 
 CSS = """
-@page { size: Letter; margin: 0.6in 0.75in; }
+@page { size: Letter; margin: 0.6in 42pt 0.8in; }  /* 42pt + 12pt body padding = 0.75in */
 :root { --font: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif; --ink:#111827; --muted:#4b5563;
         --faint:#6b7280; --rule:#9ca3af; --panel:#e5e7eb; --accent:#00063d; }
 * { box-sizing: border-box; }
 body { font-family: var(--font); font-size: 10pt;
-       line-height: 1.38; color: var(--ink); margin: 0;
+       line-height: 1.38; color: var(--ink); margin: 0; padding: 0 12pt;
        -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .label { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
          color: var(--muted); margin: 0 0 3pt; }
@@ -125,12 +125,14 @@ table.items th.num { text-align: right; }
 table.items td { padding: 4.5pt 0; vertical-align: top; }
 table.items tr { break-inside: avoid; }
 td.line { width: 34pt; color: var(--faint); }
+tr.opt td { padding: 2.5pt 0; font-size: 9pt; }
 tr.group td { padding: 11pt 0 1pt; font-size: 7.5pt; font-weight: 600; letter-spacing: .08em;
               text-transform: uppercase; color: var(--muted); }
 .item { font-weight: 600; }
 .spec { color: var(--muted); font-size: 8.5pt; }
 .code { color: var(--faint); font-weight: 400; }
 
+.closing { break-inside: avoid; }
 .totals { margin: 14pt 0 0 auto; width: 260pt; break-inside: avoid; }
 .totals .row { display: flex; justify-content: space-between; padding: 2pt 0; }
 .totals .row > span:first-child { color: var(--muted); }
@@ -146,7 +148,8 @@ tr.group td { padding: 11pt 0 1pt; font-size: 7.5pt; font-weight: 600; letter-sp
           break-inside: avoid; }
 .field { border-bottom: 0.5pt solid var(--rule); height: 26pt; }
 .accept .label { margin-top: 5pt; }
-.foot { margin-top: 18pt; font-size: 7.5pt; color: var(--faint); }
+.foot { position: fixed; bottom: 0; left: 12pt; right: 12pt; display: flex;
+        justify-content: space-between; font-size: 7.5pt; color: var(--faint); }
 """
 
 
@@ -174,7 +177,7 @@ def render_html(q: dict) -> str:
 
     acc = [i for i in (list(opts) + list(upfits)) if i.get("include", True)]
     acc_rows = "\n".join(
-        '<tr><td class="line"></td><td>{desc}{code}</td><td class="num">{price}</td></tr>'.format(
+        '<tr class="opt"><td class="line"></td><td>{desc}{code}</td><td class="num">{price}</td></tr>'.format(
             desc=e(i.get("description", "")),
             code=f' <span class="code">({e(i.get("code",""))})</span>' if i.get("code") else "",
             price=money(i.get("price")),
@@ -268,6 +271,7 @@ def render_html(q: dict) -> str:
   </tbody>
 </table>
 
+<div class="closing">
 <div class="totals">
   {"".join(total_rows)}
 </div>
@@ -278,8 +282,9 @@ def render_html(q: dict) -> str:
   <div><div class="field"></div><p class="label">Customer signature</p></div>
   <div><div class="field"></div><p class="label">Acceptance date</p></div>
 </div>
+</div>
 
-<div class="foot">{foot}</div>
+<div class="foot"><span>{foot}</span><span>{e(q.get("quote_id",""))}</span></div>
 
 </body></html>"""
 
