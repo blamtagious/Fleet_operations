@@ -2,7 +2,7 @@ FROM python:3.12-slim
 
 # Chromium renders the quote PDFs (see app/lib/render.py)
 RUN apt-get update \
- && apt-get install -y --no-install-recommends chromium fonts-liberation fonts-ibm-plex \
+ && apt-get install -y --no-install-recommends chromium fonts-liberation fonts-lato \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /srv

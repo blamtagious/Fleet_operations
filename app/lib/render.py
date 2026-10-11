@@ -92,61 +92,61 @@ def _rows(items, cols, empty_rows=0):
 
 CSS = """
 @page { size: Letter; margin: 0.6in 0.75in; }
-:root { --font: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; --ink:#111827; --muted:#4b5563;
+:root { --font: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif; --ink:#111827; --muted:#4b5563;
         --faint:#6b7280; --rule:#9ca3af; --panel:#e5e7eb; --accent:#00063d; }
 * { box-sizing: border-box; }
 body { font-family: var(--font); font-size: 10pt;
-       line-height: 1.45; color: var(--ink); margin: 0;
+       line-height: 1.38; color: var(--ink); margin: 0;
        -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .label { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
          color: var(--muted); margin: 0 0 3pt; }
 .num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 
 .header { display: flex; justify-content: space-between; align-items: flex-start;
-          padding-bottom: 20pt; border-bottom: 0.5pt solid var(--rule); }
+          padding-bottom: 14pt; border-bottom: 0.5pt solid var(--rule); }
 .header img { height: 56pt; width: auto; display: block; }
 .title { text-align: right; }
-.title h1 { margin: 0 0 10pt; font-size: 22pt; font-weight: 300; letter-spacing: -.01em;
+.title h1 { margin: 0 0 7pt; font-size: 22pt; font-weight: 300; letter-spacing: -.01em;
             color: var(--accent); }
 .meta { display: inline-grid; grid-template-columns: auto auto; gap: 2pt 18pt; text-align: left; margin: 0; }
 .meta dt { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
            color: var(--muted); align-self: center; }
 .meta dd { margin: 0; font-weight: 500; text-align: right; }
 
-.parties { display: grid; grid-template-columns: 1fr 260pt; gap: 0 36pt; margin-top: 22pt; }
+.parties { display: grid; grid-template-columns: 1fr 260pt; gap: 0 36pt; margin-top: 16pt; }
 .parties p { margin: 0; }
 .parties .name { font-weight: 600; }
 .parties .sub { color: var(--muted); }
 
-table.items { width: 100%; border-collapse: collapse; margin-top: 28pt; }
+table.items { width: 100%; border-collapse: collapse; margin-top: 20pt; }
 table.items th { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
                  color: var(--muted); text-align: left; padding: 0 0 6pt; }
 table.items th.num { text-align: right; }
-table.items td { padding: 7pt 0; vertical-align: top; }
+table.items td { padding: 4.5pt 0; vertical-align: top; }
 table.items tr { break-inside: avoid; }
 td.line { width: 34pt; color: var(--faint); }
-tr.group td { padding: 16pt 0 2pt; font-size: 7.5pt; font-weight: 600; letter-spacing: .08em;
+tr.group td { padding: 11pt 0 1pt; font-size: 7.5pt; font-weight: 600; letter-spacing: .08em;
               text-transform: uppercase; color: var(--muted); }
 .item { font-weight: 600; }
 .spec { color: var(--muted); font-size: 8.5pt; }
 .code { color: var(--faint); font-weight: 400; }
 
-.totals { margin: 20pt 0 0 auto; width: 260pt; break-inside: avoid; }
-.totals .row { display: flex; justify-content: space-between; padding: 3pt 0; }
+.totals { margin: 14pt 0 0 auto; width: 260pt; break-inside: avoid; }
+.totals .row { display: flex; justify-content: space-between; padding: 2pt 0; }
 .totals .row > span:first-child { color: var(--muted); }
-.totals .grand { margin: 8pt -12pt 0; padding: 10pt 12pt; background: var(--panel); border-radius: 4pt;
+.totals .grand { margin: 6pt -12pt 0; padding: 8pt 12pt; background: var(--panel); border-radius: 4pt;
                  align-items: baseline; }
 .totals .grand > span:first-child { font-size: 8pt; font-weight: 600; letter-spacing: .08em;
                                     text-transform: uppercase; color: var(--ink); }
 .totals .grand > span:last-child { font-size: 15pt; font-weight: 700; color: var(--accent);
                                    font-variant-numeric: tabular-nums; }
 
-.notes { margin-top: 26pt; font-size: 8pt; line-height: 1.5; color: var(--muted); max-width: 5.6in; }
-.accept { margin-top: 36pt; display: grid; grid-template-columns: 1fr 260pt; gap: 0 36pt;
+.notes { margin-top: 18pt; font-size: 8pt; line-height: 1.5; color: var(--muted); max-width: 5.6in; }
+.accept { margin-top: 28pt; display: grid; grid-template-columns: 1fr 260pt; gap: 0 36pt;
           break-inside: avoid; }
-.field { border-bottom: 0.5pt solid var(--rule); height: 30pt; }
+.field { border-bottom: 0.5pt solid var(--rule); height: 26pt; }
 .accept .label { margin-top: 5pt; }
-.foot { margin-top: 24pt; font-size: 7.5pt; color: var(--faint); }
+.foot { margin-top: 18pt; font-size: 7.5pt; color: var(--faint); }
 """
 
 
