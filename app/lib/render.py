@@ -128,6 +128,8 @@ td.line { width: 34pt; color: var(--faint); }
 tr.opt td { padding: 2.5pt 0; font-size: 9pt; }
 tr.group td { padding: 11pt 0 1pt; font-size: 7.5pt; font-weight: 600; letter-spacing: .08em;
               text-transform: uppercase; color: var(--muted); }
+.detail { white-space: pre-line; color: var(--muted); font-size: 8.3pt; line-height: 1.4;
+          margin: 2pt 0 5pt; max-width: 4.9in; }
 .item { font-weight: 600; }
 .spec { color: var(--muted); font-size: 8.5pt; }
 .code { color: var(--faint); font-weight: 400; }
@@ -175,10 +177,11 @@ def render_html(q: dict) -> str:
         for i in veh_items
     )
 
-    def _acc_row(desc, code, price):
+    def _acc_row(desc, code, price, details=""):
+        extra = f'<div class="detail">{e(details.strip())}</div>' if (details or "").strip() else ""
         return (
-            '<tr class="opt"><td class="line"></td><td>{desc}{code}</td><td class="num">{price}</td></tr>'
-        ).format(desc=e(desc), code=code, price=money(price))
+            '<tr class="opt"><td class="line"></td><td>{desc}{code}{extra}</td><td class="num">{price}</td></tr>'
+        ).format(desc=e(desc), code=code, price=money(price), extra=extra)
 
     def _code(i):
         return f' <span class="code">({e(i.get("code",""))})</span>' if i.get("code") else ""
@@ -191,7 +194,7 @@ def render_html(q: dict) -> str:
         rows.append(_acc_row("Optional Factory Equipment", "", total))
     else:
         rows += [_acc_row(i.get("description", ""), _code(i), i.get("price")) for i in chosen]
-    rows += [_acc_row(i.get("description", ""), _code(i), i.get("price"))
+    rows += [_acc_row(i.get("description", ""), _code(i), i.get("price"), i.get("details", ""))
              for i in upfits if i.get("include", True)]
     acc = rows
     acc_rows = "\n".join(rows)
@@ -359,3 +362,33 @@ def render_pdf(q: dict, out_path: str) -> str:
                 pass
             raise RuntimeError(f"Chrome failed to produce a PDF. {err}")
     return out_path
+
+
+def append_pdfs(out_path: str, extra: list) -> int:
+    """Append every page of the `extra` PDFs to out_path. Returns pages added.
+
+    Unreadable or encrypted files are skipped, so a bad attachment never
+    stops the quote itself from being produced.
+    """
+    from pypdf import PdfReader, PdfWriter
+
+    writer = PdfWriter()
+    for page in PdfReader(out_path).pages:
+        writer.add_page(page)
+    added = 0
+    for path in extra:
+        try:
+            reader = PdfReader(path)
+            if reader.is_encrypted and not reader.decrypt(""):
+                continue
+            for page in reader.pages:
+                writer.add_page(page)
+                added += 1
+        except Exception:
+            continue
+    if added:
+        tmp = out_path + ".part"
+        with open(tmp, "wb") as f:
+            writer.write(f)
+        os.replace(tmp, out_path)
+    return added

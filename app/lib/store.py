@@ -123,6 +123,14 @@ def save_quote(quote: dict, spec_files: list | None = None) -> dict:
             if os.path.abspath(src) != os.path.abspath(dest):
                 shutil.copy2(src, dest)
 
+    # Re-saving an existing quote: keep the version it replaces.
+    prev = os.path.join(d, "quote.json")
+    if os.path.isfile(prev):
+        hist = os.path.join(d, "history")
+        os.makedirs(hist, exist_ok=True)
+        stamp = dt.datetime.fromtimestamp(os.path.getmtime(prev)).strftime("%Y%m%d-%H%M%S")
+        shutil.copy2(prev, os.path.join(hist, f"quote-{stamp}.json"))
+
     _write_json(os.path.join(d, "quote.json"), quote)
     quote["_dir"] = d
     return quote
@@ -183,6 +191,7 @@ UPFIT_TEMPLATE = {
     "valid_until": "",
     "price": None,
     "line_items": [],
+    "details": "",         # extended description printed under the line on the quote
     "applies_to": {
         "model_codes": [],     # e.g. ["W3H", "W4H"] -- empty means "any"
         "chassis": "",         # free text, e.g. "F-350/F-450 Chassis Cab DRW"

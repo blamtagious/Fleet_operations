@@ -95,6 +95,7 @@ wireDrop($('#drop'), $('#file'), async files => {
     const j = await api('/api/parse-spec', { files: payload });
     const r = j.results[0];
     SPEC = r.spec; SPEC_FILE = r.source; Q = r.quote;
+    $('#recalled').innerHTML = '';
     $('#specname').textContent = r.source_name;
     renderSuggestedUpfits(r.applicable_upfits);
     showEditor();
@@ -118,6 +119,7 @@ function showEditor() {
   $('#v_qty').value = Q.vehicle.quantity || 1;
   $('#q_notes').value = Q.notes || '';
   $('#inc_dest').checked = !!Q.include_destination;
+  $('#attach_spec').checked = Q.attach_spec !== false;
   $('#desthint').textContent = Q.destination
     ? 'Proposal shows ' + money(Q.destination) + '. State bid prices are normally quoted delivered.'
     : 'No destination charge on the proposal.';
@@ -202,7 +204,10 @@ function renderUpfits() {
   const rows = (Q.upfits || []).map((u, i) => `
     <tr class="${u.include !== false ? '' : 'off'}">
       <td class="c"><input type="checkbox" data-up="${i}" data-k="include" ${u.include !== false ? 'checked' : ''} style="width:auto"></td>
-      <td class="desc"><input data-up="${i}" data-k="description" value="${esc(u.description)}"></td>
+      <td class="desc"><input data-up="${i}" data-k="description" value="${esc(u.description)}">
+        <textarea data-up="${i}" data-k="details" rows="${Math.min(8, Math.max(2, (u.details || '').split('\n').length))}"
+          placeholder="Extended description for the customer. Prints in small type under this line."
+          style="margin-top:4px;width:100%;font-size:12px">${esc(u.details || '')}</textarea></td>
       <td><input data-up="${i}" data-k="code" value="${esc(u.code || '')}"></td>
       <td class="r"><input class="money" data-up="${i}" data-k="price" value="${u.price ?? ''}"></td>
       <td class="c"><button class="link" data-del-up="${i}">✕</button></td>
@@ -228,6 +233,7 @@ function renderSuggestedUpfits(list) {
     Q.upfits.push({
       description: (u.upfitter ? u.upfitter + ' — ' : '') + (u.title || ''),
       code: u.reference || '', price: u.price, include: true, upfit_id: u.id,
+      details: u.details || '',
     });
     renderUpfits(); recalc(); toast('Added ' + u.title);
   });
@@ -373,6 +379,7 @@ autocomplete($('#bidsearch'), $('#bid_ac'),
   });
 
 /* ---------------- actions ---------------- */
+$('#attach_spec').onchange = e => { Q.attach_spec = e.target.checked; };
 $('#btn_save').onclick = async () => {
   try {
     const j = await api('/api/save', { quote: Q, spec_files: SPEC_FILE ? [SPEC_FILE] : [] });
@@ -392,7 +399,7 @@ $('#btn_pdf').onclick = async ev => {
       ` · <button class="link" id="reveal">show in Finder</button>`;
     $('#reveal').onclick = () => api('/api/reveal', { path: j.pdf });
     window.open('/api/file?path=' + encodeURIComponent(j.pdf), '_blank');
-    toast('Quote PDF generated');
+    toast(j.attached_pages ? 'Quote PDF generated, with ' + j.attached_pages + ' pages attached' : 'Quote PDF generated');
   } catch (e) { toast(e.message, true); }
   finally { b.disabled = false; b.textContent = old; }
 };
@@ -400,6 +407,7 @@ $('#btn_pdf').onclick = async ev => {
 $('#btn_reset').onclick = () => {
   if (!confirm('Discard this quote and start over?')) return;
   Q = null; SPEC = null; SPEC_FILE = null;
+  $('#recalled').innerHTML = '';
   $('#editor').style.display = 'none';
   $('#specname').textContent = '';
   $('#upfit_suggest').innerHTML = '';
@@ -412,9 +420,34 @@ let U_ITEMS = [];        // breakdown rows in the form
 wireDrop($('#updrop'), $('#upfile'), async files => {
   for (const f of files) UPFIT_FILES.push({ name: f.name, data: await readAsB64(f) });
   renderPendingFiles();
-  if (!$('#u_title').value) $('#u_title').value = files[0].name.replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ');
-  toast('Attached ' + files[0].name);
+  const first = files[0];
+  if (!$('#u_title').value) $('#u_title').value = first.name.replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ');
+  toast('Reading ' + first.name + '...');
+  try {
+    const j = await api('/api/upfit-parse', { files: [{ name: first.name, data: UPFIT_FILES[UPFIT_FILES.length - files.length].data }] });
+    applyParsedUpfit(j.parsed);
+  } catch (e) { toast('Attached ' + first.name + ' (could not read it: ' + e.message + ')', true); }
 });
+
+/* Fill the library form from a parsed upfitter quote. Only blank fields are
+   touched, so anything already typed is kept. The person reviews, then saves. */
+function applyParsedUpfit(p) {
+  const put = (id, v) => { if (v && !$('#' + id).value.trim()) $('#' + id).value = v; };
+  const a = p.applies_to || {};
+  $('#u_title').value = ($('#u_title').value && !p.title) ? $('#u_title').value : (p.title || $('#u_title').value);
+  put('u_upfitter', p.upfitter); put('u_ref', p.reference); put('u_body', p.body_type);
+  put('u_qdate', p.quote_date); put('u_valid', p.valid_until); put('u_details', p.details);
+  put('u_codes', (a.model_codes || []).join(', ')); put('u_wb', (a.wheelbase || []).join(', '));
+  if (a.cab && !$('#u_cab').value) $('#u_cab').value = a.cab;
+  if (a.drw !== undefined && $('#u_drw').value === '') $('#u_drw').value = a.drw ? 'true' : 'false';
+  if ((p.line_items || []).length && !U_ITEMS.length) { U_ITEMS = p.line_items.map(i => ({ ...i })); renderItems(); }
+  else if (p.price && !$('#u_price').value) $('#u_price').value = Number(p.price).toFixed(2);
+  const notes = (p.confidence || []).concat(p.notes ? [p.notes] : []);
+  $('#u_editing').innerHTML = `<div class="note ${notes.length ? 'warn' : 'good'}">
+    Read from the PDF. <strong>Check it before saving</strong>: price, lines and the customer description.
+    ${notes.map(n => '<div>' + esc(n) + '</div>').join('')}</div>`;
+  toast('Filled in from the PDF. Please check it.');
+}
 
 function renderPendingFiles() {
   $('#upfiles').innerHTML = UPFIT_FILES.map((f, i) =>
@@ -455,7 +488,7 @@ $('#u_additem').onclick = () => { U_ITEMS.push({ description: '', price: 0 }); r
 
 /* --- form <-> record --- */
 const U_FIELDS = ['u_upfitter','u_ref','u_title','u_body','u_price','u_year',
-                  'u_qdate','u_valid','u_notes','u_codes','u_chassis','u_wb'];
+                  'u_qdate','u_valid','u_notes','u_details','u_codes','u_chassis','u_wb'];
 
 function clearForm() {
   EDITING = null; UPFIT_FILES = []; U_ITEMS = [];
@@ -489,6 +522,7 @@ function editUpfit(id, asCopy) {
   $('#u_qdate').value = asCopy ? '' : (u.quote_date || '');
   $('#u_valid').value = asCopy ? '' : (u.valid_until || '');
   $('#u_notes').value = u.notes || '';
+  $('#u_details').value = u.details || '';
   $('#u_codes').value = (a.model_codes || []).join(', ');
   $('#u_chassis').value = a.chassis || '';
   $('#u_wb').value = (a.wheelbase || []).join(', ');
@@ -548,6 +582,7 @@ $('#u_save').onclick = async () => {
     quote_date: $('#u_qdate').value.trim(),
     valid_until: $('#u_valid').value.trim(),
     notes: $('#u_notes').value.trim(),
+    details: $('#u_details').value.trim(),
     applies_to: {
       model_codes: $('#u_codes').value.split(',').map(x => x.trim().toUpperCase()).filter(Boolean),
       chassis: $('#u_chassis').value.trim(),
@@ -645,12 +680,36 @@ async function loadSaved() {
         <td>${esc(q.customer?.org || q.customer?.name || '')}</td>
         <td>${esc(q.vehicle_title)}${q.qty > 1 ? ` <span class="code">×${q.qty}</span>` : ''}</td>
         <td class="r">${money(q.total)}</td>
-        <td class="c">${q.has_pdf ? `<button class="link" data-pdf="${esc(q.dir)}/quote.pdf">PDF</button> ` : ''}
+        <td class="c"><button class="link" data-edit-q="${esc(q.quote_id)}">Edit</button>
+          ${q.has_pdf ? `<button class="link" data-pdf="${esc(q.dir)}/quote.pdf">PDF</button> ` : ''}
           ${hosted() ? '' : `<button class="link" data-rev="${esc(q.dir)}">folder</button>`}</td>
       </tr>`).join('') + '</tbody></table>'
       : '<div class="empty">No saved quotes yet.</div>';
+    $$('[data-edit-q]').forEach(b => b.onclick = () => recallQuote(b.dataset.editQ));
     $$('[data-pdf]').forEach(b => b.onclick = () => window.open('/api/file?path=' + encodeURIComponent(b.dataset.pdf), '_blank'));
     $$('#savedlist [data-rev]').forEach(b => b.onclick = () => api('/api/reveal', { path: b.dataset.rev }));
+  } catch (e) { toast(e.message, true); }
+}
+
+/* Reopen a saved quote in the editor: add or remove upfits and options, then
+   save or regenerate the PDF. Saving overwrites it; the old version goes to history/. */
+async function recallQuote(id) {
+  if (Q && $('#editor').style.display !== 'none' &&
+      !confirm('You have a quote open in the editor. Replace it with ' + id + '?')) return;
+  try {
+    const j = await api('/api/quote?id=' + encodeURIComponent(id));
+    Q = j.quote;
+    SPEC = { vehicle_title: (Q.vehicle || {}).title || '' };
+    SPEC_FILE = null;        // the original spec PDF is already stored with the quote
+    $('.tabs button[data-tab="build"]').click();
+    showEditor();
+    $('#specname').textContent = Q.quote_id;
+    $('#recalled').innerHTML =
+      `<div class="note warn">Editing saved quote <strong>${esc(Q.quote_id)}</strong>
+       (last saved ${esc((Q.updated_at || '').replace('T', ' '))}). Saving or generating the PDF
+       replaces it; the previous version is kept in the quote's history folder.</div>`;
+    renderSuggestedUpfits(j.applicable_upfits);
+    toast('Editing ' + Q.quote_id);
   } catch (e) { toast(e.message, true); }
 }
 

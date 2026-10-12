@@ -59,6 +59,7 @@
         <span id="specname" class="code"></span>
       </h3>
       <div class="body">
+        <div id="recalled"></div>
         <div id="warnings"></div>
         <div class="grid3">
           <div class="field"><label class="f">Quote ID</label><input id="q_id"></div>
@@ -153,6 +154,9 @@
         </div>
         <div class="row" style="margin-top:18px">
           <button class="btn" id="btn_pdf">Generate Quote PDF</button>
+          <label class="lump" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"
+                 title="Adds the Ford spec proposal and window sticker you dropped in to the end of the quote PDF">
+            <input type="checkbox" id="attach_spec" style="width:auto;margin:0"> Attach spec proposal &amp; window sticker</label>
           <button class="btn ghost" id="btn_save">Save Draft</button>
           <button class="btn ghost" id="btn_reset">Start Over</button>
           <span class="sp" style="flex:1"></span>
@@ -210,7 +214,10 @@
           <div class="field"><label class="f">Wheels</label>
             <select id="u_drw"><option value="">Any</option><option value="true">DRW (dual)</option><option value="false">SRW (single)</option></select></div>
         </div>
-        <div class="field"><label class="f">Notes</label><textarea id="u_notes"></textarea></div>
+        <div class="field"><label class="f">Description for the customer quote</label>
+          <textarea id="u_details" rows="5" placeholder="Prints under this line on the quote, e.g. features, what is included"></textarea>
+          <div class="hint">Filled in from the dropped PDF when it can be read. Edit freely.</div></div>
+        <div class="field"><label class="f">Notes (internal)</label><textarea id="u_notes"></textarea></div>
         <button class="btn" id="u_save">Save to library</button>
       </div>
     </div>

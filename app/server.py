@@ -36,7 +36,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from lib import (accessories, auth, build, config, finlookup, identity, pricing,  # noqa: E402
-                 render, specparse, store)
+                 render, specparse, store, upfitparse)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STATIC = os.path.join(HERE, "static")
@@ -318,7 +318,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": True, "quotes": store.list_quotes()})
             if path == "/api/quote":
                 q = store.load_quote(query.get("id", ""))
-                return self._json({"ok": bool(q), "quote": q})
+                if not q:
+                    return self._err("Quote not found.", 404)
+                veh = q.get("vehicle") or {}
+                fits = store.applicable_upfits(
+                    {"vehicle_title": veh.get("title", ""), "model_code": veh.get("model_code", "")}
+                )
+                return self._json({"ok": True, "quote": q, "applicable_upfits": fits})
             if path == "/api/upfits":
                 return self._json(
                     {"ok": True, "upfits": store.list_upfits(with_usage=True)}
@@ -363,6 +369,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": True, "quote": saved})
             if path == "/api/pdf":
                 return self._pdf(data)
+            if path == "/api/upfit-parse":
+                f = (data.get("files") or [{}])[0]
+                src = f.get("path") or self._stage(f.get("name"), f.get("data"))
+                known = sorted({u.get("upfitter") for u in store.list_upfits() if u.get("upfitter")})
+                return self._json({"ok": True, "parsed": upfitparse.parse(src, known)})
             if path == "/api/upfit-save":
                 return self._upfit_save(data)
             if path == "/api/upfit-delete":
@@ -583,7 +594,15 @@ class Handler(BaseHTTPRequestHandler):
         saved = store.save_quote(q, data.get("spec_files") or [])
         out = os.path.join(saved["_dir"], "quote.pdf")
         render.render_pdf(saved, out)
-        return self._json({"ok": True, "quote": saved, "pdf": out})
+        attached = 0
+        if saved.get("attach_spec", True):
+            spec_dir = os.path.join(saved["_dir"], "spec")
+            extra = sorted(
+                os.path.join(spec_dir, f) for f in (os.listdir(spec_dir) if os.path.isdir(spec_dir) else [])
+                if f.lower().endswith(".pdf")
+            )
+            attached = render.append_pdfs(out, extra)
+        return self._json({"ok": True, "quote": saved, "pdf": out, "attached_pages": attached})
 
     def _upfit_save(self, data):
         rec = data.get("upfit") or {}
