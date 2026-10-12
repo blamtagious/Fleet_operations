@@ -175,15 +175,26 @@ def render_html(q: dict) -> str:
         for i in veh_items
     )
 
-    acc = [i for i in (list(opts) + list(upfits)) if i.get("include", True)]
-    acc_rows = "\n".join(
-        '<tr class="opt"><td class="line"></td><td>{desc}{code}</td><td class="num">{price}</td></tr>'.format(
-            desc=e(i.get("description", "")),
-            code=f' <span class="code">({e(i.get("code",""))})</span>' if i.get("code") else "",
-            price=money(i.get("price")),
-        )
-        for i in acc
-    )
+    def _acc_row(desc, code, price):
+        return (
+            '<tr class="opt"><td class="line"></td><td>{desc}{code}</td><td class="num">{price}</td></tr>'
+        ).format(desc=e(desc), code=code, price=money(price))
+
+    def _code(i):
+        return f' <span class="code">({e(i.get("code",""))})</span>' if i.get("code") else ""
+
+    chosen = [i for i in opts if i.get("include", True)]
+    rows = []
+    if q.get("options_lump") and chosen:
+        # One line for everything Ford builds in; upfits stay itemized below it.
+        total = sum(float(i.get("price") or 0) for i in chosen)
+        rows.append(_acc_row("Optional Factory Equipment", "", total))
+    else:
+        rows += [_acc_row(i.get("description", ""), _code(i), i.get("price")) for i in chosen]
+    rows += [_acc_row(i.get("description", ""), _code(i), i.get("price"))
+             for i in upfits if i.get("include", True)]
+    acc = rows
+    acc_rows = "\n".join(rows)
     acc_block = (
         '<tr class="group"><td colspan="3">Options &amp; Accessories</td></tr>\n' + acc_rows
         if acc else ""
