@@ -95,6 +95,7 @@ wireDrop($('#drop'), $('#file'), async files => {
     const j = await api('/api/parse-spec', { files: payload });
     const r = j.results[0];
     SPEC = r.spec; SPEC_FILE = r.source; Q = r.quote;
+    $('#recalled').innerHTML = '';
     $('#specname').textContent = r.source_name;
     renderSuggestedUpfits(r.applicable_upfits);
     showEditor();
@@ -402,6 +403,7 @@ $('#btn_pdf').onclick = async ev => {
 $('#btn_reset').onclick = () => {
   if (!confirm('Discard this quote and start over?')) return;
   Q = null; SPEC = null; SPEC_FILE = null;
+  $('#recalled').innerHTML = '';
   $('#editor').style.display = 'none';
   $('#specname').textContent = '';
   $('#upfit_suggest').innerHTML = '';
@@ -647,12 +649,36 @@ async function loadSaved() {
         <td>${esc(q.customer?.org || q.customer?.name || '')}</td>
         <td>${esc(q.vehicle_title)}${q.qty > 1 ? ` <span class="code">×${q.qty}</span>` : ''}</td>
         <td class="r">${money(q.total)}</td>
-        <td class="c">${q.has_pdf ? `<button class="link" data-pdf="${esc(q.dir)}/quote.pdf">PDF</button> ` : ''}
+        <td class="c"><button class="link" data-edit-q="${esc(q.quote_id)}">Edit</button>
+          ${q.has_pdf ? `<button class="link" data-pdf="${esc(q.dir)}/quote.pdf">PDF</button> ` : ''}
           ${hosted() ? '' : `<button class="link" data-rev="${esc(q.dir)}">folder</button>`}</td>
       </tr>`).join('') + '</tbody></table>'
       : '<div class="empty">No saved quotes yet.</div>';
+    $$('[data-edit-q]').forEach(b => b.onclick = () => recallQuote(b.dataset.editQ));
     $$('[data-pdf]').forEach(b => b.onclick = () => window.open('/api/file?path=' + encodeURIComponent(b.dataset.pdf), '_blank'));
     $$('#savedlist [data-rev]').forEach(b => b.onclick = () => api('/api/reveal', { path: b.dataset.rev }));
+  } catch (e) { toast(e.message, true); }
+}
+
+/* Reopen a saved quote in the editor: add or remove upfits and options, then
+   save or regenerate the PDF. Saving overwrites it; the old version goes to history/. */
+async function recallQuote(id) {
+  if (Q && $('#editor').style.display !== 'none' &&
+      !confirm('You have a quote open in the editor. Replace it with ' + id + '?')) return;
+  try {
+    const j = await api('/api/quote?id=' + encodeURIComponent(id));
+    Q = j.quote;
+    SPEC = { vehicle_title: (Q.vehicle || {}).title || '' };
+    SPEC_FILE = null;        // the original spec PDF is already stored with the quote
+    $('.tabs button[data-tab="build"]').click();
+    showEditor();
+    $('#specname').textContent = Q.quote_id;
+    $('#recalled').innerHTML =
+      `<div class="note warn">Editing saved quote <strong>${esc(Q.quote_id)}</strong>
+       (last saved ${esc((Q.updated_at || '').replace('T', ' '))}). Saving or generating the PDF
+       replaces it; the previous version is kept in the quote's history folder.</div>`;
+    renderSuggestedUpfits(j.applicable_upfits);
+    toast('Editing ' + Q.quote_id);
   } catch (e) { toast(e.message, true); }
 }
 

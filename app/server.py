@@ -318,7 +318,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": True, "quotes": store.list_quotes()})
             if path == "/api/quote":
                 q = store.load_quote(query.get("id", ""))
-                return self._json({"ok": bool(q), "quote": q})
+                if not q:
+                    return self._err("Quote not found.", 404)
+                veh = q.get("vehicle") or {}
+                fits = store.applicable_upfits(
+                    {"vehicle_title": veh.get("title", ""), "model_code": veh.get("model_code", "")}
+                )
+                return self._json({"ok": True, "quote": q, "applicable_upfits": fits})
             if path == "/api/upfits":
                 return self._json(
                     {"ok": True, "upfits": store.list_upfits(with_usage=True)}
