@@ -191,6 +191,7 @@ UPFIT_TEMPLATE = {
     "valid_until": "",
     "price": None,
     "line_items": [],
+    "details": "",         # extended description printed under the line on the quote
     "applies_to": {
         "model_codes": [],     # e.g. ["W3H", "W4H"] -- empty means "any"
         "chassis": "",         # free text, e.g. "F-350/F-450 Chassis Cab DRW"

@@ -128,6 +128,8 @@ td.line { width: 34pt; color: var(--faint); }
 tr.opt td { padding: 2.5pt 0; font-size: 9pt; }
 tr.group td { padding: 11pt 0 1pt; font-size: 7.5pt; font-weight: 600; letter-spacing: .08em;
               text-transform: uppercase; color: var(--muted); }
+.detail { white-space: pre-line; color: var(--muted); font-size: 8.3pt; line-height: 1.4;
+          margin: 2pt 0 5pt; max-width: 4.9in; }
 .item { font-weight: 600; }
 .spec { color: var(--muted); font-size: 8.5pt; }
 .code { color: var(--faint); font-weight: 400; }
@@ -175,10 +177,11 @@ def render_html(q: dict) -> str:
         for i in veh_items
     )
 
-    def _acc_row(desc, code, price):
+    def _acc_row(desc, code, price, details=""):
+        extra = f'<div class="detail">{e(details.strip())}</div>' if (details or "").strip() else ""
         return (
-            '<tr class="opt"><td class="line"></td><td>{desc}{code}</td><td class="num">{price}</td></tr>'
-        ).format(desc=e(desc), code=code, price=money(price))
+            '<tr class="opt"><td class="line"></td><td>{desc}{code}{extra}</td><td class="num">{price}</td></tr>'
+        ).format(desc=e(desc), code=code, price=money(price), extra=extra)
 
     def _code(i):
         return f' <span class="code">({e(i.get("code",""))})</span>' if i.get("code") else ""
@@ -191,7 +194,7 @@ def render_html(q: dict) -> str:
         rows.append(_acc_row("Optional Factory Equipment", "", total))
     else:
         rows += [_acc_row(i.get("description", ""), _code(i), i.get("price")) for i in chosen]
-    rows += [_acc_row(i.get("description", ""), _code(i), i.get("price"))
+    rows += [_acc_row(i.get("description", ""), _code(i), i.get("price"), i.get("details", ""))
              for i in upfits if i.get("include", True)]
     acc = rows
     acc_rows = "\n".join(rows)

@@ -204,7 +204,10 @@ function renderUpfits() {
   const rows = (Q.upfits || []).map((u, i) => `
     <tr class="${u.include !== false ? '' : 'off'}">
       <td class="c"><input type="checkbox" data-up="${i}" data-k="include" ${u.include !== false ? 'checked' : ''} style="width:auto"></td>
-      <td class="desc"><input data-up="${i}" data-k="description" value="${esc(u.description)}"></td>
+      <td class="desc"><input data-up="${i}" data-k="description" value="${esc(u.description)}">
+        <textarea data-up="${i}" data-k="details" rows="${Math.min(8, Math.max(2, (u.details || '').split('\n').length))}"
+          placeholder="Extended description for the customer. Prints in small type under this line."
+          style="margin-top:4px;width:100%;font-size:12px">${esc(u.details || '')}</textarea></td>
       <td><input data-up="${i}" data-k="code" value="${esc(u.code || '')}"></td>
       <td class="r"><input class="money" data-up="${i}" data-k="price" value="${u.price ?? ''}"></td>
       <td class="c"><button class="link" data-del-up="${i}">✕</button></td>
@@ -230,6 +233,7 @@ function renderSuggestedUpfits(list) {
     Q.upfits.push({
       description: (u.upfitter ? u.upfitter + ' — ' : '') + (u.title || ''),
       code: u.reference || '', price: u.price, include: true, upfit_id: u.id,
+      details: u.details || '',
     });
     renderUpfits(); recalc(); toast('Added ' + u.title);
   });
@@ -416,9 +420,34 @@ let U_ITEMS = [];        // breakdown rows in the form
 wireDrop($('#updrop'), $('#upfile'), async files => {
   for (const f of files) UPFIT_FILES.push({ name: f.name, data: await readAsB64(f) });
   renderPendingFiles();
-  if (!$('#u_title').value) $('#u_title').value = files[0].name.replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ');
-  toast('Attached ' + files[0].name);
+  const first = files[0];
+  if (!$('#u_title').value) $('#u_title').value = first.name.replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ');
+  toast('Reading ' + first.name + '...');
+  try {
+    const j = await api('/api/upfit-parse', { files: [{ name: first.name, data: UPFIT_FILES[UPFIT_FILES.length - files.length].data }] });
+    applyParsedUpfit(j.parsed);
+  } catch (e) { toast('Attached ' + first.name + ' (could not read it: ' + e.message + ')', true); }
 });
+
+/* Fill the library form from a parsed upfitter quote. Only blank fields are
+   touched, so anything already typed is kept. The person reviews, then saves. */
+function applyParsedUpfit(p) {
+  const put = (id, v) => { if (v && !$('#' + id).value.trim()) $('#' + id).value = v; };
+  const a = p.applies_to || {};
+  $('#u_title').value = ($('#u_title').value && !p.title) ? $('#u_title').value : (p.title || $('#u_title').value);
+  put('u_upfitter', p.upfitter); put('u_ref', p.reference); put('u_body', p.body_type);
+  put('u_qdate', p.quote_date); put('u_valid', p.valid_until); put('u_details', p.details);
+  put('u_codes', (a.model_codes || []).join(', ')); put('u_wb', (a.wheelbase || []).join(', '));
+  if (a.cab && !$('#u_cab').value) $('#u_cab').value = a.cab;
+  if (a.drw !== undefined && $('#u_drw').value === '') $('#u_drw').value = a.drw ? 'true' : 'false';
+  if ((p.line_items || []).length && !U_ITEMS.length) { U_ITEMS = p.line_items.map(i => ({ ...i })); renderItems(); }
+  else if (p.price && !$('#u_price').value) $('#u_price').value = Number(p.price).toFixed(2);
+  const notes = (p.confidence || []).concat(p.notes ? [p.notes] : []);
+  $('#u_editing').innerHTML = `<div class="note ${notes.length ? 'warn' : 'good'}">
+    Read from the PDF. <strong>Check it before saving</strong>: price, lines and the customer description.
+    ${notes.map(n => '<div>' + esc(n) + '</div>').join('')}</div>`;
+  toast('Filled in from the PDF. Please check it.');
+}
 
 function renderPendingFiles() {
   $('#upfiles').innerHTML = UPFIT_FILES.map((f, i) =>
@@ -459,7 +488,7 @@ $('#u_additem').onclick = () => { U_ITEMS.push({ description: '', price: 0 }); r
 
 /* --- form <-> record --- */
 const U_FIELDS = ['u_upfitter','u_ref','u_title','u_body','u_price','u_year',
-                  'u_qdate','u_valid','u_notes','u_codes','u_chassis','u_wb'];
+                  'u_qdate','u_valid','u_notes','u_details','u_codes','u_chassis','u_wb'];
 
 function clearForm() {
   EDITING = null; UPFIT_FILES = []; U_ITEMS = [];
@@ -493,6 +522,7 @@ function editUpfit(id, asCopy) {
   $('#u_qdate').value = asCopy ? '' : (u.quote_date || '');
   $('#u_valid').value = asCopy ? '' : (u.valid_until || '');
   $('#u_notes').value = u.notes || '';
+  $('#u_details').value = u.details || '';
   $('#u_codes').value = (a.model_codes || []).join(', ');
   $('#u_chassis').value = a.chassis || '';
   $('#u_wb').value = (a.wheelbase || []).join(', ');
@@ -552,6 +582,7 @@ $('#u_save').onclick = async () => {
     quote_date: $('#u_qdate').value.trim(),
     valid_until: $('#u_valid').value.trim(),
     notes: $('#u_notes').value.trim(),
+    details: $('#u_details').value.trim(),
     applies_to: {
       model_codes: $('#u_codes').value.split(',').map(x => x.trim().toUpperCase()).filter(Boolean),
       chassis: $('#u_chassis').value.trim(),

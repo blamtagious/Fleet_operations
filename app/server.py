@@ -36,7 +36,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from lib import (accessories, auth, build, config, finlookup, identity, pricing,  # noqa: E402
-                 render, specparse, store)
+                 render, specparse, store, upfitparse)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STATIC = os.path.join(HERE, "static")
@@ -369,6 +369,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": True, "quote": saved})
             if path == "/api/pdf":
                 return self._pdf(data)
+            if path == "/api/upfit-parse":
+                f = (data.get("files") or [{}])[0]
+                src = f.get("path") or self._stage(f.get("name"), f.get("data"))
+                known = sorted({u.get("upfitter") for u in store.list_upfits() if u.get("upfitter")})
+                return self._json({"ok": True, "parsed": upfitparse.parse(src, known)})
             if path == "/api/upfit-save":
                 return self._upfit_save(data)
             if path == "/api/upfit-delete":
