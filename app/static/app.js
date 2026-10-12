@@ -118,6 +118,7 @@ function showEditor() {
   $('#v_qty').value = Q.vehicle.quantity || 1;
   $('#q_notes').value = Q.notes || '';
   $('#inc_dest').checked = !!Q.include_destination;
+  $('#attach_spec').checked = Q.attach_spec !== false;
   $('#desthint').textContent = Q.destination
     ? 'Proposal shows ' + money(Q.destination) + '. State bid prices are normally quoted delivered.'
     : 'No destination charge on the proposal.';
@@ -373,6 +374,7 @@ autocomplete($('#bidsearch'), $('#bid_ac'),
   });
 
 /* ---------------- actions ---------------- */
+$('#attach_spec').onchange = e => { Q.attach_spec = e.target.checked; };
 $('#btn_save').onclick = async () => {
   try {
     const j = await api('/api/save', { quote: Q, spec_files: SPEC_FILE ? [SPEC_FILE] : [] });
@@ -392,7 +394,7 @@ $('#btn_pdf').onclick = async ev => {
       ` · <button class="link" id="reveal">show in Finder</button>`;
     $('#reveal').onclick = () => api('/api/reveal', { path: j.pdf });
     window.open('/api/file?path=' + encodeURIComponent(j.pdf), '_blank');
-    toast('Quote PDF generated');
+    toast(j.attached_pages ? 'Quote PDF generated, with ' + j.attached_pages + ' pages attached' : 'Quote PDF generated');
   } catch (e) { toast(e.message, true); }
   finally { b.disabled = false; b.textContent = old; }
 };

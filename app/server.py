@@ -583,7 +583,15 @@ class Handler(BaseHTTPRequestHandler):
         saved = store.save_quote(q, data.get("spec_files") or [])
         out = os.path.join(saved["_dir"], "quote.pdf")
         render.render_pdf(saved, out)
-        return self._json({"ok": True, "quote": saved, "pdf": out})
+        attached = 0
+        if saved.get("attach_spec", True):
+            spec_dir = os.path.join(saved["_dir"], "spec")
+            extra = sorted(
+                os.path.join(spec_dir, f) for f in (os.listdir(spec_dir) if os.path.isdir(spec_dir) else [])
+                if f.lower().endswith(".pdf")
+            )
+            attached = render.append_pdfs(out, extra)
+        return self._json({"ok": True, "quote": saved, "pdf": out, "attached_pages": attached})
 
     def _upfit_save(self, data):
         rec = data.get("upfit") or {}

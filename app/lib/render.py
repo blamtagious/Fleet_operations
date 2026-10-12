@@ -359,3 +359,33 @@ def render_pdf(q: dict, out_path: str) -> str:
                 pass
             raise RuntimeError(f"Chrome failed to produce a PDF. {err}")
     return out_path
+
+
+def append_pdfs(out_path: str, extra: list) -> int:
+    """Append every page of the `extra` PDFs to out_path. Returns pages added.
+
+    Unreadable or encrypted files are skipped, so a bad attachment never
+    stops the quote itself from being produced.
+    """
+    from pypdf import PdfReader, PdfWriter
+
+    writer = PdfWriter()
+    for page in PdfReader(out_path).pages:
+        writer.add_page(page)
+    added = 0
+    for path in extra:
+        try:
+            reader = PdfReader(path)
+            if reader.is_encrypted and not reader.decrypt(""):
+                continue
+            for page in reader.pages:
+                writer.add_page(page)
+                added += 1
+        except Exception:
+            continue
+    if added:
+        tmp = out_path + ".part"
+        with open(tmp, "wb") as f:
+            writer.write(f)
+        os.replace(tmp, out_path)
+    return added
