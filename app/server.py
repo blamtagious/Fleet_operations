@@ -35,7 +35,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from lib import (accessories, auth, build, config, finlookup, identity, pricing,  # noqa: E402
+from lib import (accessories, auth, billing, build, config, finlookup, identity, pricing,  # noqa: E402
                  render, specparse, store, upfitparse)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -284,6 +284,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if path == "/" or path == "/index.html":
                 return self._static("index.html")
+            if path == "/billing":
+                return self._static("billing.html")
             if path.startswith("/static/"):
                 return self._static(path[len("/static/"):])
             if path == "/upload":
@@ -369,6 +371,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": True, "quote": saved})
             if path == "/api/pdf":
                 return self._pdf(data)
+            if path.startswith("/api/billing/"):
+                return self._billing(path, data)
             if path == "/api/upfit-parse":
                 f = (data.get("files") or [{}])[0]
                 src = f.get("path") or self._stage(f.get("name"), f.get("data"))
@@ -588,6 +592,27 @@ class Handler(BaseHTTPRequestHandler):
                 }
             )
         return self._json({"ok": True, "results": out})
+
+    def _billing(self, path, data):
+        """Billing cover sheet and customer invoices, rendered from the Billing page's data."""
+        which = path.rsplit("/", 1)[-1]
+        if which == "cover-html":
+            return self._json({"ok": True, "html": billing.cover_html(data)})
+        if which not in ("cover-pdf", "invoices-pdf"):
+            return self._err("Unknown billing action.", 404)
+        html_text = billing.cover_html(data) if which == "cover-pdf" else billing.invoices_html(data)
+        if which == "invoices-pdf" and "<section" not in html_text:
+            return self._err("Add at least one vehicle first.")
+        os.makedirs(STAGING, exist_ok=True)
+        out = os.path.join(STAGING, f"billing-{os.getpid()}-{threading.get_ident()}.pdf")
+        try:
+            render.html_to_pdf(html_text, out)
+            with open(out, "rb") as f:
+                blob = f.read()
+        finally:
+            if os.path.exists(out):
+                os.remove(out)
+        return self._send(200, blob, "application/pdf")
 
     def _pdf(self, data):
         q = build.recalc(data.get("quote", {}))

@@ -305,6 +305,11 @@ def render_html(q: dict) -> str:
 
 def render_pdf(q: dict, out_path: str) -> str:
     """Write quote.pdf next to quote.json using headless Chrome."""
+    return html_to_pdf(render_html(q), out_path)
+
+
+def html_to_pdf(html_text: str, out_path: str) -> str:
+    """Print an HTML document to a PDF file with headless Chrome."""
     chrome = chrome_path()
     if not chrome:
         raise RuntimeError(
@@ -313,7 +318,6 @@ def render_pdf(q: dict, out_path: str) -> str:
             "to the full path of chrome.exe."
         )
 
-    html_text = render_html(q)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         src = os.path.join(tmp, "quote.html")

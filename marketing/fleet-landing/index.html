@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fleet Sales | Ford of Murfreesboro | State Contract Pricing</title>
+<meta name="description" content="Ford fleet sales in Murfreesboro, TN with State of Tennessee contract pricing. One team guides your agency from spec to delivery.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap">
+<style>
+  :root {
+    --ink: #111827; --muted: #4b5563; --faint: #6b7280;
+    --navy: #00063d; --blue: #0a3a8c; --orange: #e8710a;
+    --panel: #f3f4f6; --line: #d1d5db; --bg: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: Lato, "Helvetica Neue", Arial, sans-serif; color: var(--ink);
+         background: var(--bg); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  img { max-width: 100%; display: block; }
+  a { color: inherit; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--orange); margin: 0 0 10px; }
+  h1, h2, h3 { line-height: 1.12; letter-spacing: -.01em; margin: 0; }
+  h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 900; color: var(--navy); }
+  p.lead { font-size: 18px; color: var(--muted); max-width: 640px; margin: 14px 0 0; }
+  section { padding: 84px 0; }
+
+  /* header */
+  .bar { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,.94); backdrop-filter: blur(8px);
+         border-bottom: 1px solid var(--line); }
+  .bar .wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 16px; }
+  .bar img { height: 52px; width: auto; margin: -6px 0; }
+  .bar nav { display: flex; gap: 26px; font-size: 14px; font-weight: 700; }
+  .bar nav a { text-decoration: none; color: var(--muted); }
+  .bar nav a:hover { color: var(--navy); }
+  .btn { display: inline-block; background: var(--navy); color: #fff; text-decoration: none; font-weight: 700;
+         padding: 13px 22px; border-radius: 6px; font-size: 15px; border: 2px solid var(--navy); }
+  .btn:hover { background: #0b1a6b; }
+  .btn.ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,.7); }
+  .btn.ghost:hover { background: rgba(255,255,255,.12); }
+  .btn.sm { padding: 9px 16px; font-size: 14px; }
+
+  /* hero */
+  .hero { position: relative; color: #fff; padding: 0; background: var(--navy) url(img/storefront.jpg) center 40% / cover; }
+  .hero::before { content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(0,6,61,.92) 0%, rgba(0,6,61,.78) 45%, rgba(0,6,61,.25) 100%); }
+  .hero .wrap { position: relative; padding-top: 110px; padding-bottom: 110px; }
+  .hero h1 { font-size: clamp(38px, 6vw, 66px); font-weight: 900; max-width: 760px; }
+  .hero p { font-size: 20px; max-width: 600px; margin: 22px 0 32px; color: #e5e7eb; font-weight: 300; }
+  .hero .actions { display: flex; gap: 14px; flex-wrap: wrap; }
+  .hero .btn:not(.ghost) { background: var(--orange); border-color: var(--orange); }
+  .hero .btn:not(.ghost):hover { background: #c95f05; }
+
+  /* proof strip */
+  .strip { background: var(--panel); padding: 0; }
+  .strip .wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .strip div.item { padding: 26px 22px; border-left: 1px solid var(--line); }
+  .strip div.item:first-child { border-left: 0; padding-left: 0; }
+  .strip b { display: block; font-size: 15px; color: var(--navy); }
+  .strip span { font-size: 14px; color: var(--muted); }
+
+  /* stages */
+  .stages { margin-top: 48px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 56px; counter-reset: s; }
+  .stage { display: grid; grid-template-columns: 52px 1fr; gap: 6px 16px; padding: 24px 0; border-top: 1px solid var(--line); }
+  .stage .n { grid-row: span 2; font-size: 34px; font-weight: 900; color: var(--orange); line-height: 1; padding-top: 2px; }
+  .stage h3 { font-size: 20px; color: var(--navy); font-weight: 700; }
+  .stage p { margin: 0; color: var(--muted); font-size: 16px; }
+
+  /* inventory */
+  .inv { background: var(--navy); color: #fff; }
+  .inv h2 { color: #fff; }
+  .inv p.lead { color: #cbd5e1; }
+  .inv .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 56px; align-items: start; margin-top: 40px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #94a3b8; font-weight: 700; padding: 0 0 10px; }
+  th.r, td.r { text-align: right; }
+  td { padding: 14px 0; border-top: 1px solid rgba(255,255,255,.16); font-size: 17px; }
+  td.r { font-variant-numeric: tabular-nums; }
+  td.fam { font-weight: 700; }
+  td.soft { color: #cbd5e1; }
+  .inv .note { font-size: 13px; color: #94a3b8; margin-top: 16px; }
+  .inv .side { border-left: 1px solid rgba(255,255,255,.18); padding-left: 40px; }
+  .inv .side h3 { font-size: 22px; font-weight: 700; }
+  .inv .side ul { padding-left: 20px; color: #cbd5e1; margin: 14px 0 24px; }
+  .inv .side li { margin-bottom: 8px; }
+
+  /* shop */
+  .shop { padding: 0; position: relative; }
+  .shop .photo { height: 420px; background: url(img/service.webp) center / cover; }
+  .shop .card { position: relative; margin: -90px auto 0; max-width: 640px; background: #fff; padding: 36px; border-radius: 8px;
+                box-shadow: 0 18px 50px rgba(0,6,61,.18); }
+  .shop .card h2 { font-size: 30px; }
+  .shop .card p { color: var(--muted); margin: 12px 0 0; }
+  .shop-wrap { padding-bottom: 84px; }
+
+  /* team */
+  .team { margin-top: 44px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .person { border: 1px solid var(--line); border-radius: 8px; padding: 22px; }
+  .avatar { width: 84px; height: 84px; border-radius: 50%; background: var(--panel); border: 2px dashed var(--line);
+            display: grid; place-items: center; font-size: 11px; color: var(--faint); text-align: center; margin-bottom: 16px; }
+  .person b { font-size: 18px; display: block; color: var(--navy); }
+  .person span { color: var(--muted); font-size: 15px; display: block; }
+  .person a { font-size: 15px; text-decoration: none; color: var(--blue); display: block; margin-top: 6px; }
+  .quote { margin-top: 44px; padding: 28px 32px; border-left: 4px solid var(--orange); background: var(--panel); font-size: 20px; font-weight: 300; }
+  .quote small { display: block; font-size: 14px; font-weight: 400; color: var(--faint); margin-top: 8px; }
+
+  /* faq */
+  .faq { background: var(--panel); }
+  .faq .list { margin-top: 36px; max-width: 800px; }
+  details { border-top: 1px solid var(--line); padding: 18px 0; }
+  details:last-child { border-bottom: 1px solid var(--line); }
+  summary { font-weight: 700; font-size: 18px; color: var(--navy); cursor: pointer; }
+  details p { margin: 10px 0 0; color: var(--muted); }
+
+  /* cta */
+  .cta { background: var(--navy); color: #fff; text-align: center; }
+  .cta h2 { color: #fff; }
+  .cta p { color: #cbd5e1; font-size: 18px; margin: 14px auto 28px; max-width: 560px; }
+  .cta .actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .cta .btn:first-child { background: var(--orange); border-color: var(--orange); }
+
+  footer { padding: 40px 0; color: var(--muted); font-size: 14px; }
+  footer .wrap { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+  footer img { height: 72px; width: auto; }
+
+  @media (max-width: 860px) {
+    section { padding: 60px 0; }
+    .bar nav { display: none; }
+    .strip .wrap { grid-template-columns: 1fr 1fr; }
+    .strip div.item { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); }
+    .strip div.item:nth-child(-n+2) { border-top: 0; }
+    .stages { grid-template-columns: 1fr; }
+    .inv .grid { grid-template-columns: 1fr; gap: 36px; }
+    .inv .side { border-left: 0; padding-left: 0; border-top: 1px solid rgba(255,255,255,.18); padding-top: 32px; }
+    .team { grid-template-columns: 1fr; }
+    .hero .wrap { padding-top: 70px; padding-bottom: 70px; }
+    .shop .photo { height: 260px; }
+    .shop .card { margin: -50px 16px 0; padding: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <img src="img/logo-dual.png" alt="Ford of Murfreesboro and Ford">
+    <nav>
+      <a href="#how">How we help</a>
+      <a href="#inventory">Inventory</a>
+      <a href="#team">Team</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn sm" href="#contact">Request a fleet quote</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow" style="color:#f5a35a">Ford of Murfreesboro Fleet Sales</p>
+    <h1>One team from first spec to final delivery.</h1>
+    <p>We help Tennessee agencies and businesses choose, price, upfit and receive the right trucks, with State of Tennessee Statewide Contract pricing and one point of contact at every step.</p>
+    <div class="actions">
+      <a class="btn" href="#contact">Request a fleet quote</a>
+      <a class="btn ghost" href="#how">See how it works</a>
+    </div>
+  </div>
+</section>
+
+<div class="strip">
+  <div class="wrap">
+    <div class="item"><b>State Contract pricing</b><span>State of Tennessee Statewide Contract</span></div>
+    <div class="item"><b>Every line itemized</b><span>Vehicle, options, upfit and accessories</span></div>
+    <div class="item"><b>Spec and window sticker</b><span>Included with your quote</span></div>
+    <div class="item"><b>Quotes held 30 days</b><span>Unless noted on the quote</span></div>
+  </div>
+</div>
+
+<section id="how">
+  <div class="wrap">
+    <p class="eyebrow">How we help</p>
+    <h2>Support at every stage of the sale.</h2>
+    <p class="lead">Fleet buying has a lot of moving parts. Here is where our team steps in, from the first call to the next order.</p>
+
+    <div class="stages">
+      <div class="stage"><div class="n">1</div><h3>Understand the need</h3>
+        <p>We start with the job: crew size, payload, towing, terrain and your budget cycle. You get a short list of right-sized options, not a catalog.</p></div>
+      <div class="stage"><div class="n">2</div><h3>Spec the right truck</h3>
+        <p>We build the Ford configuration with you: model, cab, bed, powertrain and the options worth paying for. You see the Ford spec proposal and window sticker, so you know exactly what is being ordered.</p></div>
+      <div class="stage"><div class="n">3</div><h3>Plan the upfit and accessories</h3>
+        <p>Service bodies, racks and lighting are coordinated with trusted upfitters such as Knapheide, Reading, Lehr and Stringfellow. Factory accessories like bed covers, running boards and floor liners go on the same quote.</p></div>
+      <div class="stage"><div class="n">4</div><h3>Contract pricing, in writing</h3>
+        <p>Your quote reflects State of Tennessee Statewide Contract pricing with every line shown clearly. Taxes, title and registration are quoted separately.</p></div>
+      <div class="stage"><div class="n">5</div><h3>Approval and ordering</h3>
+        <p>We match your agency's FIN code, prepare the paperwork and place the order. Need to add equipment? A quote can be reopened and updated, and it keeps its quote number.</p></div>
+      <div class="stage"><div class="n">6</div><h3>Build and upfit tracking</h3>
+        <p>We follow your order through production and upfit and keep you posted on timing, so nothing about your delivery date is a surprise.</p></div>
+      <div class="stage"><div class="n">7</div><h3>Delivery and handoff</h3>
+        <p>Your vehicles arrive ready to work, with a walk-through for your drivers and fleet staff.</p></div>
+      <div class="stage"><div class="n">8</div><h3>Service and the next order</h3>
+        <p>We stay your contact for questions and service coordination, and we help plan next year's replacements.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="inv" id="inventory">
+  <div class="wrap">
+    <p class="eyebrow" style="color:#f5a35a">Inventory snapshot</p>
+    <h2>Trucks and vans ready to quote.</h2>
+    <p class="lead">A look at what we have on the ground and on the way, as of October 11, 2026. Inventory changes daily, so call for today's numbers.</p>
+
+    <div class="grid">
+      <div>
+        <table>
+          <thead><tr><th>Model</th><th class="r">In stock</th><th class="r">On the way</th></tr></thead>
+          <tbody>
+            <tr><td class="fam">Super Duty (F-250 to F-550)</td><td class="r">111</td><td class="r soft">12</td></tr>
+            <tr><td class="fam">F-150</td><td class="r">31</td><td class="r soft">55</td></tr>
+            <tr><td class="fam">Transit</td><td class="r">10</td><td class="r soft">5</td></tr>
+            <tr><td class="fam">Explorer</td><td class="r">194</td><td class="r soft">7</td></tr>
+            <tr><td class="fam">Maverick</td><td class="r">22</td><td class="r soft">1</td></tr>
+            <tr><td class="fam">Bronco Sport</td><td class="r">25</td><td class="r soft">0</td></tr>
+            <tr><td class="fam">Mustang Mach-E</td><td class="r">3</td><td class="r soft">3</td></tr>
+          </tbody>
+        </table>
+        <p class="note">"On the way" counts vehicles in production or in transit. Pricing is quoted per agency under State Contract terms.</p>
+      </div>
+      <div class="side">
+        <h3>Don't see the exact build?</h3>
+        <ul>
+          <li>Super Duty in regular, SuperCab and crew cab, plus chassis cabs ready for a body</li>
+          <li>4x4 and 4x2 configurations</li>
+          <li>Factory orders for the exact spec your agency needs</li>
+        </ul>
+        <a class="btn" style="background:var(--orange);border-color:var(--orange)" href="#contact">Ask about a specific build</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="shop">
+  <div class="photo" role="img" aria-label="Ford of Murfreesboro service department with technicians working on trucks and SUVs"></div>
+  <div class="wrap shop-wrap">
+    <div class="card">
+      <p class="eyebrow">After delivery</p>
+      <h2>We keep your fleet running.</h2>
+      <p>Our service department works on the same trucks we sell. Your fleet contact can coordinate service, so your vehicles spend more time on the job and less time waiting.</p>
+    </div>
+  </div>
+</section>
+
+<section id="team">
+  <div class="wrap">
+    <p class="eyebrow">The team</p>
+    <h2>The people behind your quote.</h2>
+    <p class="lead">You deal with the same Fleet Sales team from the first question to the final handoff.</p>
+
+    <div class="team">
+      <div class="person">
+        <div class="avatar">Photo</div>
+        <b>Craig Baton</b><span>Fleet Sales Manager</span>
+        <a href="mailto:cbaton@fordofmurfreesboro.com">cbaton@fordofmurfreesboro.com</a>
+        <a href="tel:+16152431528">(615) 243-1528</a>
+      </div>
+      <div class="person">
+        <div class="avatar">Photo</div>
+        <b>[Team member name]</b><span>[Title]</span>
+        <a href="#">[email]</a><a href="#">[phone]</a>
+      </div>
+      <div class="person">
+        <div class="avatar">Photo</div>
+        <b>[Team member name]</b><span>[Title]</span>
+        <a href="#">[email]</a><a href="#">[phone]</a>
+      </div>
+    </div>
+
+    <div class="quote">
+      &ldquo;[Customer quote about working with the team.]&rdquo;
+      <small>[Name], [Agency]</small>
+    </div>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <div class="wrap">
+    <p class="eyebrow">Questions</p>
+    <h2>Good questions we hear.</h2>
+    <div class="list">
+      <details><summary>What is State Contract pricing, and who can use it?</summary>
+        <p>The State of Tennessee Statewide Contract sets pricing for eligible agencies. [Confirm eligibility wording with your contract documents.] Tell us who you are and we will confirm your pricing.</p></details>
+      <details><summary>How long does an order take from quote to delivery?</summary>
+        <p>It depends on whether we have a matching unit in stock, whether it is a factory order, and whether it needs an upfit. [Add typical timeframes.] We give you a realistic date when you quote.</p></details>
+      <details><summary>Can you coordinate the upfit and accessories on the same quote?</summary>
+        <p>Yes. Upfit equipment from our upfitter partners and factory accessories appear as lines on the same quote, with a description of what is included.</p></details>
+      <details><summary>What do you need from us to start?</summary>
+        <p>The vehicle and job you have in mind, your agency name and FIN code, and your timeline. A Ford spec proposal helps if you already have one.</p></details>
+      <details><summary>Can a quote be changed after we get it?</summary>
+        <p>Yes. We can reopen it to add or remove upfit equipment or options. It stays under the same quote number.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="contact">
+  <div class="wrap">
+    <h2>Ready to talk fleet?</h2>
+    <p>Tell us what you need to put on the road. We will come back with a clear, itemized quote.</p>
+    <div class="actions">
+      <a class="btn" href="mailto:cbaton@fordofmurfreesboro.com?subject=Fleet%20quote%20request">Email the fleet team</a>
+      <a class="btn ghost" href="tel:+16152431528">Call (615) 243-1528</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <img src="img/logo-pro.png" alt="Ford of Murfreesboro and Ford Pro">
+    <div>Ford of Murfreesboro &middot; 1550 NW Broad St., Murfreesboro, TN 37129</div>
+  </div>
+</footer>
+
+</body>
+</html>
