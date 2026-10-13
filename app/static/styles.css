@@ -146,3 +146,6 @@ h3.subhead .sp{flex:1}
 .panel > h3 .lump { display: inline-flex; align-items: center; gap: 6px; margin-left: 14px;
   font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; cursor: pointer; }
 .panel > h3 .lump input { width: auto; margin: 0; }
+
+.tabs .tablink { background: rgba(255,255,255,.1); color: #fff; padding: 6px 13px; border-radius: 6px; font-size: 13px; text-decoration: none; }
+.tabs .tablink:hover { background: rgba(255,255,255,.2); }
