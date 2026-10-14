@@ -15,52 +15,17 @@ from .render import e
 
 LOGO = os.path.join(os.path.dirname(render.LOGO), "header-logo.png")
 
-CSS = """
-@page { size: Letter; margin: 0.6in 42pt 0.7in; }
-:root { --font: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif; --ink:#111827; --muted:#4b5563;
-        --faint:#6b7280; --rule:#9ca3af; --panel:#e5e7eb; --accent:#00063d; }
-* { box-sizing: border-box; }
-body { font-family: var(--font); font-size: 10pt; line-height: 1.38; color: var(--ink); margin: 0; padding: 0 12pt;
-       -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.label { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 3pt; }
-.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-.header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14pt; border-bottom: .5pt solid var(--rule); }
-.header img { height: 52pt; width: auto; display: block; }
-.title { text-align: right; }
-.title h1 { margin: 0 0 7pt; font-size: 22pt; font-weight: 300; letter-spacing: -.01em; color: var(--accent); }
-.meta { display: inline-grid; grid-template-columns: auto auto; gap: 2pt 18pt; text-align: left; margin: 0; }
-.meta dt { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); align-self: center; }
-.meta dd { margin: 0; font-weight: 500; text-align: right; min-width: 70pt; }
-.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 36pt; margin-top: 16pt; }
-.cols p { margin: 0; }
-.name { font-weight: 600; }
-.sub { color: var(--muted); }
-.blank { color: var(--rule); }
-table.items { width: 100%; border-collapse: collapse; margin-top: 22pt; }
-table.items th { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
-                 text-align: left; padding: 0 0 6pt; }
-table.items th.num { text-align: right; }
-table.items td { padding: 6pt 0; vertical-align: top; }
-table.items tr { break-inside: avoid; }
-td.stock { width: 70pt; color: var(--muted); }
-.item { font-weight: 600; }
-.spec { color: var(--muted); font-size: 8.3pt; }
-.mono { font-family: "Courier New", monospace; letter-spacing: .03em; }
-tr.group td { padding: 14pt 0 2pt; font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-tr.empty td { color: var(--rule); font-size: 9pt; }
-.totals { margin: 14pt 0 0 auto; width: 260pt; break-inside: avoid; }
-.totals .row { display: flex; justify-content: space-between; padding: 2pt 0; }
-.totals .row > span:first-child { color: var(--muted); }
-.totals .grand { margin: 6pt -12pt 0; padding: 8pt 12pt; background: var(--panel); border-radius: 4pt; align-items: baseline; }
-.totals .grand > span:first-child { font-size: 8pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
-.totals .grand > span:last-child { font-size: 15pt; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
-.notes { margin-top: 20pt; font-size: 9pt; color: var(--muted); max-width: 5.6in; white-space: pre-line; }
-.foot { position: fixed; bottom: 0; left: 12pt; right: 12pt; display: flex; justify-content: space-between; font-size: 7.5pt; color: var(--faint); }
-.terms { margin-top: 22pt; display: grid; grid-template-columns: 1fr 260pt; gap: 0 36pt; break-inside: avoid; }
-.terms p { margin: 0; }
-.due { font-size: 11pt; font-weight: 700; color: var(--accent); }
-.thanks { margin-top: 26pt; text-align: center; font-size: 9pt; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+# Same system as the sales quote (render.py): header bar, type, table and totals box.
+CSS = render.CSS + """
+@page inv { margin: 0 0 80px; }
+section.inv { page: inv; }
 section.inv + section.inv { break-before: page; }
+.meta { flex-wrap: wrap; row-gap: var(--s2); }
+.terms { margin-top: var(--s4); display: grid; grid-template-columns: 1fr 280px; gap: 0 var(--s6); break-inside: avoid; }
+.terms p { margin: 0; }
+.due { font-weight: 600; color: var(--primary); }
+.thanks { margin-top: var(--s6); font-size: 13px; color: var(--text-2); }
+.blank { color: var(--line-strong); }
 """
 
 DEALER = "Ford of Murfreesboro"
@@ -110,10 +75,33 @@ def _v(x) -> str:
     return e(x) if x else '<span class="blank">&mdash;</span>'
 
 
+def _text_date(iso: str) -> str:
+    return render._fmt_date(iso) if iso else ""
+
+
 def _page(body: str, foot: str) -> str:
     return (f'<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>{e(foot)}</title>'
-            f'<style>{CSS}</style></head><body>{body}<div class="foot"><span>{e(DEALER)} &middot; '
-            f'{e(ADDRESS[0])} &middot; {e(ADDRESS[1])}</span><span>{e(foot)}</span></div></body></html>')
+            f'<style>{render.font_css()}\n{CSS}</style></head><body>{body}'
+            f'<div class="foot"><span>{e(DEALER)} &middot; 1550 N.W. Broad St., Murfreesboro, TN 37129</span>'
+            f'<span>{e(foot)}</span></div></body></html>')
+
+
+def _bar(tag: str) -> str:
+    return f'<div class="bar"><span class="name">Ford of Murfreesboro Fleet</span><span class="tag">{e(tag)}</span></div>'
+
+
+def _meta(pairs) -> str:
+    cells = "".join(
+        f'<div><p class="label">{e(k)}</p>{v}</div>' for k, v in pairs
+    )
+    return f'<div class="meta">{cells}</div>'
+
+
+def _val(text, code=False) -> str:
+    text = (text or "").strip()
+    if not text:
+        return '<span class="blank">&mdash;</span>'
+    return f'<span class="code" style="color:var(--text)">{e(text)}</span>' if code else f'<span class="v">{e(text)}</span>'
 
 
 def cover_html(d: dict) -> str:
@@ -123,56 +111,57 @@ def cover_html(d: dict) -> str:
     def veh_row(i, v):
         extra = ""
         if v.get("vin"):
-            extra += f'<div class="spec mono">VIN {e(v["vin"])}</div>'
+            extra += f'<div class="spec"><span class="code">VIN {e(v["vin"])}</span></div>'
         if v.get("invoiceNo"):
-            extra += f'<div class="spec">Invoice # {e(v["invoiceNo"])}</div>'
-        return (f'<tr><td class="stock">{e(v.get("stock") or "")}</td>'
+            extra += f'<div class="spec">Invoice # <span class="code">{e(v["invoiceNo"])}</span></div>'
+        return (f'<tr><td class="line">{e(v.get("stock") or "")}</td>'
                 f'<td><div class="item">{e(v.get("description") or f"Vehicle {i + 1}")}</div>{extra}</td>'
                 f'<td class="num">{_money(v.get("price"))}</td></tr>')
 
-    def lines(title, head, rows):
+    def lines(title, rows):
         rows = [r for r in rows if r.get("desc") or r.get("cost")]
+        if not rows:
+            return ""
         body = "".join(
-            f'<tr><td colspan="2">{e(r.get("desc") or "")}</td><td class="num">{_money(r.get("cost"))}</td></tr>'
-            for r in rows) or '<tr class="empty"><td colspan="3">None</td></tr>'
-        return (f'<tr class="group"><td colspan="3">{title}</td></tr>{body}')
+            f'<tr><td class="line"></td><td>{e(r.get("desc") or "")}</td><td class="num">{_money(r.get("cost"))}</td></tr>'
+            for r in rows)
+        return f'<tr class="group"><td colspan="3">{title}</td></tr>{body}'
+
+    veh_body = "".join(veh_row(i, v) for i, v in enumerate(vehs)) or \
+        '<tr><td colspan="3" style="color:var(--text-2)">No vehicles added</td></tr>'
+    extras = lines("We owe(s)", d.get("weOwes") or []) + lines("Adjustments / programs", d.get("adjs") or [])
+    notes = (d.get("notes") or "").strip()
 
     body = f"""
-<div class="header">
+{_bar("Billing cover sheet")}
+<div class="head">
+  <div><h1>Billing cover sheet</h1>
+    {_meta([("Date", _val(_text_date(d.get("date", "")))), ("Fleet P.O. #", _val(d.get("fleetPO"), True)),
+            ("Salesperson", _val(d.get("salesperson"))), ("Units", f'<span class="v">{len(vehs)}</span>')])}
+  </div>
   <img src="{_logo()}" alt="">
-  <div class="title"><h1>Billing Cover Sheet</h1>
-    <dl class="meta">
-      <dt>Date</dt><dd>{e(_mdy(d.get("date", ""))) or "&nbsp;"}</dd>
-      <dt>Fleet P.O. #</dt><dd>{e(d.get("fleetPO") or "")}&nbsp;</dd>
-      <dt>Salesperson</dt><dd>{e(d.get("salesperson") or "")}&nbsp;</dd>
-      <dt>Units</dt><dd>{len(vehs)}</dd>
-    </dl></div>
 </div>
-<div class="cols">
+<div class="parties">
   <div><p class="label">Bill to</p>
     <p class="name">{_v(d.get("company"))}</p>
     <p class="sub">{_v(d.get("address"))}</p><p class="sub">{_v(d.get("csz"))}</p>
-    <p class="sub">FIN {_v(d.get("fin"))}</p></div>
+    <p class="sub">FIN code {_val(d.get("fin"), True)}</p></div>
   <div><p class="label">Contact</p>
     <p class="name">{_v(d.get("contactName"))}</p>
     <p class="sub">{_v(d.get("contactPhone"))}</p><p class="sub">{_v(d.get("contactEmail"))}</p></div>
 </div>
+<div class="tablewrap">
 <table class="items">
-  <thead><tr><th>Stock #</th><th>Description</th><th class="num">Selling price</th></tr></thead>
-  <tbody>
-    {"".join(veh_row(i, v) for i, v in enumerate(vehs)) or '<tr class="empty"><td colspan="3">No vehicles added</td></tr>'}
-  </tbody>
+  <thead><tr><th style="width:96px">Stock #</th><th>Description</th><th class="num">Selling price</th></tr></thead>
+  <tbody>{veh_body}{extras}</tbody>
 </table>
-<div class="totals">
-  <div class="row grand"><span>Total selling price</span><span>{_money(total) if total else ""}</span></div>
 </div>
-<table class="items" style="margin-top:6pt">
-  <tbody>
-    {lines("We owe(s)", "Cost", d.get("weOwes") or [])}
-    {lines("Adjustments / programs", "Amount", d.get("adjs") or [])}
-  </tbody>
-</table>
-{f'<div class="notes"><p class="label">Notes</p>{e(d.get("notes"))}</div>' if (d.get("notes") or "").strip() else ""}
+<div class="closing">
+<div class="totals">
+  <div class="row grand"><span>Total</span><span>{_money(total) if total else ""}</span></div>
+</div>
+{f'<div class="notes" style="white-space:pre-line"><p class="label">Notes</p>{e(notes)}</div>' if notes else ""}
+</div>
 """
     return _page(body, "Billing cover sheet")
 
@@ -184,55 +173,52 @@ def invoice_html(d: dict, veh: dict, number: int = 0) -> str:
     except ValueError:
         due = ""
     price = _money(veh.get("price"))
-    inv_no = (veh.get("invoiceNo") or "").strip()
     return f"""<section class="inv">
-<div class="header">
+{_bar("Invoice")}
+<div class="head">
+  <div><h1>Invoice</h1>
+    {_meta([("Invoice #", _val(veh.get("invoiceNo"), True)), ("Invoice date", _val(_text_date(dd))),
+            ("PO number", _val(d.get("fleetPO"), True)), ("Date due", _val(_text_date(due))),
+            ("Sales rep", _val(d.get("salesperson"))), ("Stock #", _val(veh.get("stock"), True))])}
+  </div>
   <img src="{_logo()}" alt="">
-  <div class="title"><h1>Invoice</h1>
-    <dl class="meta">
-      <dt>Invoice #</dt><dd>{e(inv_no)}&nbsp;</dd>
-      <dt>Invoice date</dt><dd>{e(_mdy(dd))}&nbsp;</dd>
-      <dt>PO number</dt><dd>{e(d.get("fleetPO") or "")}&nbsp;</dd>
-      <dt>Date due</dt><dd>{e(_mdy(due))}&nbsp;</dd>
-      <dt>Sales rep</dt><dd>{e(d.get("salesperson") or "")}&nbsp;</dd>
-      <dt>Stock #</dt><dd>{e(veh.get("stock") or "")}&nbsp;</dd>
-    </dl></div>
 </div>
-<div class="cols">
+<div class="parties">
   <div><p class="label">Bill to</p>
     <p class="name">{_v(d.get("company"))}</p>
     <p class="sub">{e(d.get("address") or "")}</p><p class="sub">{e(d.get("csz") or "")}</p>
-    {f'<p class="sub">FIN {e(d["fin"])}</p>' if d.get("fin") else ""}</div>
+    {f'<p class="sub">FIN code <span class="code">{e(d["fin"])}</span></p>' if d.get("fin") else ""}</div>
   <div><p class="label">From</p>
     <p class="name">{e(DEALER)}</p>
-    <p class="sub">{e(ADDRESS[0])}</p><p class="sub">{e(ADDRESS[1])}</p>
+    <p class="sub">1550 N.W. Broad St.</p><p class="sub">Murfreesboro, TN 37129</p>
     <p class="sub">Fleet Department &middot; {e(PHONE)}</p></div>
 </div>
+<div class="tablewrap">
 <table class="items">
-  <thead><tr><th style="width:40pt">Qty</th><th>Description</th><th class="num" style="width:90pt">Unit price</th>
-    <th class="num" style="width:90pt">Amount</th></tr></thead>
-  <tbody><tr><td class="stock">1</td>
+  <thead><tr><th>Qty</th><th>Description</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead>
+  <tbody><tr><td class="line">1</td>
     <td><div class="item">{e(veh.get("description") or "")}</div>
-      <div class="spec mono">VIN {e(veh.get("vin") or "")}</div>
-      <div class="spec">Stock # {e(veh.get("stock") or "")}</div></td>
+      <div class="spec"><span class="code">VIN {e(veh.get("vin") or "")}</span></div>
+      <div class="spec">Stock # <span class="code">{e(veh.get("stock") or "")}</span></div></td>
     <td class="num">{price}</td><td class="num">{price}</td></tr></tbody>
 </table>
+</div>
 <div class="totals">
   <div class="row"><span>Subtotal</span><span class="num">{price}</span></div>
   <div class="row"><span>Tax</span><span class="num">&nbsp;</span></div>
   <div class="row"><span>Freight</span><span class="num">&nbsp;</span></div>
-  <div class="row grand"><span>Pay this amount</span><span>{price}</span></div>
+  <div class="row grand"><span>Amount due</span><span>{price}</span></div>
 </div>
 <div class="terms">
   <div><p class="label">Payment terms</p>
     <p>Payment is due within 30 days of the invoice date.</p>
-    {f'<p>Please remit by <span class="due">{e(_long(due))}</span>.</p>' if due else ""}</div>
+    {f'<p>Please remit by <span class="due">{e(_text_date(due))}</span>.</p>' if due else ""}</div>
   <div><p class="label">Make checks payable to</p>
     <p>{e(DEALER)}</p><p class="sub">Attn: Accounts Receivable</p>
-    <p class="sub">{e(ADDRESS[0])}, {e(ADDRESS[1])}</p>
-    <p class="label" style="margin-top:10pt">Questions</p><p class="sub">Fleet Department &middot; {e(PHONE)}</p></div>
+    <p class="sub">1550 N.W. Broad St., Murfreesboro, TN 37129</p>
+    <p class="label" style="margin-top:8px">Questions</p><p class="sub">Fleet Department &middot; {e(PHONE)}</p></div>
 </div>
-<p class="thanks">Thank you for your business</p>
+<p class="thanks">Thank you for your business.</p>
 </section>"""
 
 
