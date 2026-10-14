@@ -90,69 +90,124 @@ def _rows(items, cols, empty_rows=0):
     return "\n".join(out)
 
 
+# ---- FOM Fleet design system (customer documents: light theme on white) ----
+FONT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static", "fonts")
+_FONTS = (
+    ("Plus Jakarta Sans", 600, "plus-jakarta-sans-latin-600-normal.woff2"),
+    ("Plus Jakarta Sans", 700, "plus-jakarta-sans-latin-700-normal.woff2"),
+    ("Inter", 400, "inter-latin-400-normal.woff2"),
+    ("Inter", 500, "inter-latin-500-normal.woff2"),
+    ("Inter", 600, "inter-latin-600-normal.woff2"),
+    ("JetBrains Mono", 400, "jetbrains-mono-latin-400-normal.woff2"),
+    ("JetBrains Mono", 500, "jetbrains-mono-latin-500-normal.woff2"),
+)
+_font_css_cache: str | None = None
+
+
+def font_css() -> str:
+    """@font-face rules with the files embedded, so they load in any context."""
+    global _font_css_cache
+    if _font_css_cache is None:
+        out = []
+        for fam, weight, fn in _FONTS:
+            try:
+                with open(os.path.join(FONT_DIR, fn), "rb") as f:
+                    data = base64.b64encode(f.read()).decode()
+            except OSError:
+                continue
+            out.append(f'@font-face {{ font-family: "{fam}"; font-weight: {weight}; font-style: normal; '
+                       f'src: url(data:font/woff2;base64,{data}) format("woff2"); }}')
+        _font_css_cache = "\n".join(out)
+    return _font_css_cache
+
+
 CSS = """
-@page { size: Letter; margin: 0.6in 42pt 0.8in; }  /* 42pt + 12pt body padding = 0.75in */
-:root { --font: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif; --ink:#111827; --muted:#4b5563;
-        --faint:#6b7280; --rule:#9ca3af; --panel:#e5e7eb; --accent:#00063d; }
+/* First page runs the header bar edge to edge; later pages get a top margin. */
+@page { size: Letter; margin: 24px 0 80px; }
+@page :first { margin-top: 0; }
+:root {
+  --canvas: #fafafa; --surface: #ffffff; --subtle: #f2f4f7;
+  --line: #e4e7eb; --line-strong: #cbd2d9;
+  --ink: #1f2933; --primary: #3e5c76; --accent: #c85a32;
+  --text: #1f2933; --text-2: #52606d;
+  --display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: "JetBrains Mono", monospace;
+  --s1: 4px; --s2: 8px; --s4: 16px; --s6: 24px;
+}
 * { box-sizing: border-box; }
-body { font-family: var(--font); font-size: 10pt;
-       line-height: 1.38; color: var(--ink); margin: 0; padding: 0 12pt;
-       -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.label { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
-         color: var(--muted); margin: 0 0 3pt; }
+html, body { margin: 0; }
+body { font-family: var(--sans); font-size: 15px; line-height: 22px; color: var(--text); background: var(--surface);
+       padding: 0 0.75in; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.label { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+         color: var(--text-2); margin: 0 0 var(--s1); }
+.code { font-family: var(--mono); font-size: 13px; line-height: 20px; color: var(--text-2); }
 .num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 
-.header { display: flex; justify-content: space-between; align-items: flex-start;
-          padding-bottom: 14pt; border-bottom: 0.5pt solid var(--rule); }
-.header img { height: 56pt; width: auto; display: block; }
-.title { text-align: right; }
-.title h1 { margin: 0 0 7pt; font-size: 22pt; font-weight: 300; letter-spacing: -.01em;
-            color: var(--accent); }
-.meta { display: inline-grid; grid-template-columns: auto auto; gap: 2pt 18pt; text-align: left; margin: 0; }
-.meta dt { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
-           color: var(--muted); align-self: center; }
-.meta dd { margin: 0; font-weight: 500; text-align: right; }
+/* header bar: brand-ink, 3px copper rule */
+.bar { margin: 0 -0.75in; background: var(--ink); border-bottom: 3px solid var(--accent);
+       padding: var(--s4) 0.75in; display: flex; align-items: center; gap: var(--s4); }
+.bar .name { font-family: var(--display); font-weight: 700; font-size: 18px; line-height: 24px; letter-spacing: -.02em; color: #fff; }
+.bar .tag { font-family: var(--mono); font-size: 13px; line-height: 20px; color: #fff; background: var(--primary);
+            border-radius: 4px; padding: var(--s1) var(--s2); }
 
-.parties { display: grid; grid-template-columns: 1fr 260pt; gap: 0 36pt; margin-top: 16pt; }
+.head { display: flex; justify-content: space-between; align-items: flex-start; margin-top: var(--s6); }
+.head h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 32px; line-height: 36px; letter-spacing: -.02em; }
+.meta { display: flex; gap: var(--s6); margin-top: var(--s4); }
+.meta .v { font-weight: 500; }
+.head img { height: 56px; width: auto; display: block; }
+
+.parties { display: grid; grid-template-columns: 1fr 280px; gap: 0 var(--s6); margin-top: var(--s6); }
 .parties p { margin: 0; }
 .parties .name { font-weight: 600; }
-.parties .sub { color: var(--muted); }
+.parties .sub { color: var(--text-2); }
 
-table.items { width: 100%; border-collapse: collapse; margin-top: 20pt; }
-table.items th { font-size: 7.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
-                 color: var(--muted); text-align: left; padding: 0 0 6pt; }
+.tablewrap { margin-top: var(--s6); border: 1px solid var(--line); border-radius: 8px; }
+table.items { width: 100%; border-collapse: collapse; }
+table.items thead th { background: var(--subtle); border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong);
+  padding: var(--s2) var(--s4); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--text-2); text-align: left; }
+table.items thead th:first-child { border-top-left-radius: 8px; border-left: 0; }
+table.items thead th:last-child { border-top-right-radius: 8px; }
 table.items th.num { text-align: right; }
-table.items td { padding: 4.5pt 0; vertical-align: top; }
+table.items td { padding: var(--s2) var(--s4); vertical-align: top; border-bottom: 1px solid var(--line); }
+table.items tr:last-child td { border-bottom: 0; }
 table.items tr { break-inside: avoid; }
-td.line { width: 34pt; color: var(--faint); }
-tr.opt td { padding: 2.5pt 0; font-size: 9pt; }
-tr.group td { padding: 11pt 0 1pt; font-size: 7.5pt; font-weight: 600; letter-spacing: .08em;
-              text-transform: uppercase; color: var(--muted); }
-.detail { white-space: pre-line; color: var(--muted); font-size: 8.3pt; line-height: 1.4;
-          margin: 2pt 0 5pt; max-width: 4.9in; }
+td.line { width: 48px; font-family: var(--mono); font-size: 13px; color: var(--text-2); }
+tr.group td { background: var(--surface); padding-top: var(--s4); padding-bottom: var(--s1); font-size: 12px; line-height: 16px;
+              font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-2); border-bottom: 0; }
 .item { font-weight: 600; }
-.spec { color: var(--muted); font-size: 8.5pt; }
-.code { color: var(--faint); font-weight: 400; }
+.spec { color: var(--text-2); font-size: 13px; line-height: 20px; }
+.detail { white-space: pre-line; color: var(--text-2); font-size: 13px; line-height: 20px; margin-top: var(--s1); max-width: 4.6in; }
 
 .closing { break-inside: avoid; }
-.totals { margin: 14pt 0 0 auto; width: 260pt; break-inside: avoid; }
-.totals .row { display: flex; justify-content: space-between; padding: 2pt 0; }
-.totals .row > span:first-child { color: var(--muted); }
-.totals .grand { margin: 6pt -12pt 0; padding: 8pt 12pt; background: var(--panel); border-radius: 4pt;
-                 align-items: baseline; }
-.totals .grand > span:first-child { font-size: 8pt; font-weight: 600; letter-spacing: .08em;
-                                    text-transform: uppercase; color: var(--ink); }
-.totals .grand > span:last-child { font-size: 15pt; font-weight: 700; color: var(--accent);
-                                   font-variant-numeric: tabular-nums; }
-
-.notes { margin-top: 18pt; font-size: 8pt; line-height: 1.5; color: var(--muted); max-width: 5.6in; }
-.accept { margin-top: 28pt; display: grid; grid-template-columns: 1fr 260pt; gap: 0 36pt;
-          break-inside: avoid; }
-.field { border-bottom: 0.5pt solid var(--rule); height: 26pt; }
-.accept .label { margin-top: 5pt; }
-.foot { position: fixed; bottom: 0; left: 12pt; right: 12pt; display: flex;
-        justify-content: space-between; font-size: 7.5pt; color: var(--faint); }
+.totals { width: 280px; margin: var(--s4) 0 0 auto; background: var(--subtle); border: 1px solid var(--line-strong);
+          border-radius: 8px; padding: var(--s4); break-inside: avoid; }
+.totals .row { display: flex; justify-content: space-between; gap: var(--s4); line-height: 24px; }
+.totals .row > span:first-child { color: var(--text-2); }
+.totals .grand { margin-top: var(--s2); padding-top: var(--s2); border-top: 1px solid var(--line-strong); align-items: baseline; }
+.totals .grand > span:first-child { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text); }
+.totals .grand > span:last-child { font-family: var(--display); font-weight: 700; font-size: 20px; line-height: 28px;
+                                   color: var(--primary); font-variant-numeric: tabular-nums; }
+.notes { margin-top: var(--s4); font-size: 13px; line-height: 20px; color: var(--text-2); max-width: 5.4in; }
+.accept { margin-top: var(--s4); display: grid; grid-template-columns: 1fr 280px; gap: 0 var(--s6); break-inside: avoid; }
+.field { border-bottom: 1px solid var(--line-strong); height: 32px; }
+.accept .label { margin-top: var(--s2); }
+.foot { position: fixed; bottom: 0; left: 0.75in; right: 0.75in; display: flex; justify-content: space-between;
+        font-size: 13px; line-height: 20px; color: var(--text-2); }
 """
+
+
+def _fmt_date(s: str) -> str:
+    """'10/14/2026' -> 'Oct 14, 2026' (the design system's date style in text)."""
+    import datetime as _dt
+    for fmt in ("%m/%d/%Y", "%m/%d/%y", "%Y-%m-%d"):
+        try:
+            d = _dt.datetime.strptime((s or "").strip(), fmt)
+            return f"{d.strftime('%b')} {d.day}, {d.year}"
+        except ValueError:
+            continue
+    return s or ""
 
 
 def render_html(q: dict) -> str:
@@ -180,11 +235,11 @@ def render_html(q: dict) -> str:
     def _acc_row(desc, code, price, details=""):
         extra = f'<div class="detail">{e(details.strip())}</div>' if (details or "").strip() else ""
         return (
-            '<tr class="opt"><td class="line"></td><td>{desc}{code}{extra}</td><td class="num">{price}</td></tr>'
+            '<tr><td class="line"></td><td>{desc}{code}{extra}</td><td class="num">{price}</td></tr>'
         ).format(desc=e(desc), code=code, price=money(price), extra=extra)
 
     def _code(i):
-        return f' <span class="code">({e(i.get("code",""))})</span>' if i.get("code") else ""
+        return f' <span class="code">{e(i.get("code",""))}</span>' if i.get("code") else ""
 
     chosen = [i for i in opts if i.get("include", True)]
     rows = []
@@ -196,11 +251,9 @@ def render_html(q: dict) -> str:
         rows += [_acc_row(i.get("description", ""), _code(i), i.get("price")) for i in chosen]
     rows += [_acc_row(i.get("description", ""), _code(i), i.get("price"), i.get("details", ""))
              for i in upfits if i.get("include", True)]
-    acc = rows
-    acc_rows = "\n".join(rows)
     acc_block = (
-        '<tr class="group"><td colspan="3">Options &amp; Accessories</td></tr>\n' + acc_rows
-        if acc else ""
+        '<tr class="group"><td colspan="3">Options &amp; accessories</td></tr>\n' + "\n".join(rows)
+        if rows else ""
     )
 
     # Skip blank contact lines rather than printing empty rows on the quote.
@@ -218,7 +271,7 @@ def render_html(q: dict) -> str:
 
     total_rows = [
         row("Vehicle", money(t.get("vehicle"))),
-        row("Options &amp; Accessories", money(t.get("options"))),
+        row("Options &amp; accessories", money(t.get("options"))),
     ]
     if t.get("upfitting"):
         total_rows.append(row("Upfitting", money(t.get("upfitting"))))
@@ -227,7 +280,7 @@ def render_html(q: dict) -> str:
     for adj in q.get("adjustments") or []:
         total_rows.append(row(e(adj.get("label")), money(adj.get("amount"))))
     if int(v.get("quantity") or 1) > 1:
-        total_rows.append(row("Unit Total", money(t.get("unit_total"))))
+        total_rows.append(row("Unit total", money(t.get("unit_total"))))
         total_rows.append(row("Quantity", int(v.get("quantity"))))
     total_rows.append(
         f'<div class="row grand"><span>Total</span><span>{money(t.get("grand_total"))}</span></div>'
@@ -240,29 +293,30 @@ def render_html(q: dict) -> str:
     cust_lines = [
         f'<p class="name">{e(c.get("org", ""))}</p>',
         f'<p class="sub">{contact}</p>' if contact else "",
-        f'<p class="sub">FIN Code {e(fin)}</p>' if fin else "",
+        f'<p class="sub">FIN code <span class="code">{e(fin)}</span></p>' if fin else "",
     ]
     cust_block = "\n      ".join(x for x in cust_lines if x)
 
-    foot = " · ".join(
-        x for x in (e(d.get("name", "Ford of Murfreesboro")), e(d.get("address1", "")),
-                    e(d.get("address2", ""))) if x
-    )
+    foot = "Ford of Murfreesboro &middot; 1550 N.W. Broad St., Murfreesboro, TN 37129"
+    qid = e(q.get("quote_id", ""))
 
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
-<title>{e(q.get('quote_id',''))} — Sales Quote</title>
-<style>{CSS}</style></head><body>
+<title>{qid} — Sales quote</title>
+<style>{font_css()}
+{CSS}</style></head><body>
 
-<div class="header">
-  <img src="{_logo_data_uri()}" alt="Ford of Murfreesboro / Ford Pro">
-  <div class="title">
-    <h1>Sales Quote</h1>
-    <dl class="meta">
-      <dt>Quote ID</dt><dd>{e(q.get('quote_id',''))}</dd>
-      <dt>Date</dt><dd>{e(q.get('quote_date',''))}</dd>
-    </dl>
+<div class="bar"><span class="name">Ford of Murfreesboro Fleet</span><span class="tag">Sales quote</span></div>
+
+<div class="head">
+  <div>
+    <h1>Sales quote</h1>
+    <div class="meta">
+      <div><p class="label">Quote ID</p><span class="code" style="color:var(--text)">{qid}</span></div>
+      <div><p class="label">Date</p><span class="v">{e(_fmt_date(q.get('quote_date','')))}</span></div>
+    </div>
   </div>
+  <img src="{_logo_data_uri()}" alt="Ford of Murfreesboro / Ford Pro">
 </div>
 
 <div class="parties">
@@ -276,6 +330,7 @@ def render_html(q: dict) -> str:
   </div>
 </div>
 
+<div class="tablewrap">
 <table class="items">
   <thead><tr><th>#</th><th>Description</th><th class="num">Price</th></tr></thead>
   <tbody>
@@ -284,6 +339,7 @@ def render_html(q: dict) -> str:
     {acc_block}
   </tbody>
 </table>
+</div>
 
 <div class="closing">
 <div class="totals">
@@ -298,7 +354,7 @@ def render_html(q: dict) -> str:
 </div>
 </div>
 
-<div class="foot"><span>{foot}</span><span>{e(q.get("quote_id",""))}</span></div>
+<div class="foot"><span>{foot}</span><span class="code">{qid}</span></div>
 
 </body></html>"""
 
