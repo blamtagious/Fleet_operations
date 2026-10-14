@@ -170,15 +170,16 @@ table.items thead th { background: var(--subtle); border-top: 1px solid var(--li
 table.items thead th:first-child { border-top-left-radius: 8px; border-left: 0; }
 table.items thead th:last-child { border-top-right-radius: 8px; }
 table.items th.num { text-align: right; }
-table.items td { padding: var(--s2) var(--s4); vertical-align: top; border-bottom: 1px solid var(--line); }
+table.items td { padding: var(--s2) var(--s4); vertical-align: top; border-bottom: 1px solid var(--line); font-size: 13px; line-height: 20px; }
 table.items tr:last-child td { border-bottom: 0; }
 table.items tr { break-inside: avoid; }
-td.line { width: 48px; font-family: var(--mono); font-size: 13px; color: var(--text-2); }
+td.line { width: 48px; font-family: var(--mono); font-size: 12px; color: var(--text-2); }
 tr.group td { background: var(--surface); padding-top: var(--s4); padding-bottom: var(--s1); font-size: 12px; line-height: 16px;
               font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-2); border-bottom: 0; }
 .item { font-weight: 600; }
-.spec { color: var(--text-2); font-size: 13px; line-height: 20px; }
-.detail { white-space: pre-line; color: var(--text-2); font-size: 13px; line-height: 20px; margin-top: var(--s1); max-width: 4.6in; }
+.spec { color: var(--text-2); font-size: 12px; line-height: 16px; }
+.spec .code, .detail .code, td .code { font-size: 12px; line-height: 16px; }
+.detail { white-space: pre-line; color: var(--text-2); font-size: 12px; line-height: 16px; margin-top: var(--s1); max-width: 4.6in; }
 
 .closing { break-inside: avoid; }
 .totals { width: 280px; margin: var(--s4) 0 0 auto; background: var(--subtle); border: 1px solid var(--line-strong);
