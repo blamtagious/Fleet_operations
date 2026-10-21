@@ -76,7 +76,7 @@ const DROP_IDLE =
 
 function setDropBusy(name) {
   $('#drop').querySelector('h2').innerHTML =
-    '<span class="spin" style="border-color:#bbb;border-top-color:#066fd1"></span> Reading ' + esc(name) + '…';
+    '<span class="spin" style="border-color:#bbb;border-top-color:#3e5c76"></span> Reading ' + esc(name) + '…';
   $('#drop').querySelector('p').textContent = 'Parsing configuration and matching bid pricing.';
 }
 

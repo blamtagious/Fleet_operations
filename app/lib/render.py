@@ -93,13 +93,13 @@ def _rows(items, cols, empty_rows=0):
 # ---- FOM Fleet design system (customer documents: light theme on white) ----
 FONT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static", "fonts")
 _FONTS = (
-    ("Plus Jakarta Sans", 600, "plus-jakarta-sans-latin-600-normal.woff2"),
-    ("Plus Jakarta Sans", 700, "plus-jakarta-sans-latin-700-normal.woff2"),
-    ("Inter", 400, "inter-latin-400-normal.woff2"),
-    ("Inter", 500, "inter-latin-500-normal.woff2"),
-    ("Inter", 600, "inter-latin-600-normal.woff2"),
-    ("JetBrains Mono", 400, "jetbrains-mono-latin-400-normal.woff2"),
-    ("JetBrains Mono", 500, "jetbrains-mono-latin-500-normal.woff2"),
+    ("Barlow Semi Condensed", 600, "barlow-semi-condensed-latin-600-normal.woff2"),
+    ("Barlow Semi Condensed", 700, "barlow-semi-condensed-latin-700-normal.woff2"),
+    ("IBM Plex Sans", 400, "ibm-plex-sans-latin-400-normal.woff2"),
+    ("IBM Plex Sans", 500, "ibm-plex-sans-latin-500-normal.woff2"),
+    ("IBM Plex Sans", 600, "ibm-plex-sans-latin-600-normal.woff2"),
+    ("IBM Plex Mono", 400, "ibm-plex-mono-latin-400-normal.woff2"),
+    ("IBM Plex Mono", 500, "ibm-plex-mono-latin-500-normal.woff2"),
 )
 _font_css_cache: str | None = None
 
@@ -130,9 +130,9 @@ CSS = """
   --line: #e4e7eb; --line-strong: #cbd2d9;
   --ink: #1f2933; --primary: #3e5c76; --accent: #c85a32;
   --text: #1f2933; --text-2: #52606d;
-  --display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
-  --sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  --mono: "JetBrains Mono", monospace;
+  --display: "Barlow Semi Condensed", "Arial Narrow", sans-serif;
+  --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: "IBM Plex Mono", Consolas, monospace;
   --s1: 4px; --s2: 8px; --s4: 16px; --s6: 24px;
 }
 * { box-sizing: border-box; }
@@ -147,12 +147,12 @@ body { font-family: var(--sans); font-size: 15px; line-height: 22px; color: var(
 /* header bar: brand-ink, 3px copper rule */
 .bar { margin: 0 -0.75in; background: var(--ink); border-bottom: 3px solid var(--accent);
        padding: var(--s4) 0.75in; display: flex; align-items: center; gap: var(--s4); }
-.bar .name { font-family: var(--display); font-weight: 700; font-size: 18px; line-height: 24px; letter-spacing: -.02em; color: #fff; }
+.bar .name { font-family: var(--display); font-weight: 700; font-size: 20px; line-height: 24px; color: #fff; }
 .bar .tag { font-family: var(--mono); font-size: 13px; line-height: 20px; color: #fff; background: var(--primary);
             border-radius: 4px; padding: var(--s1) var(--s2); }
 
 .head { display: flex; justify-content: space-between; align-items: flex-start; margin-top: var(--s6); }
-.head h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 32px; line-height: 36px; letter-spacing: -.02em; }
+.head h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 36px; line-height: 40px; }
 .meta { display: flex; gap: var(--s6); margin-top: var(--s4); }
 .meta .v { font-weight: 500; }
 .head img { height: 56px; width: auto; display: block; }
@@ -188,7 +188,7 @@ tr.group td { background: var(--surface); padding-top: var(--s4); padding-bottom
 .totals .row > span:first-child { color: var(--text-2); }
 .totals .grand { margin-top: var(--s2); padding-top: var(--s2); border-top: 1px solid var(--line-strong); align-items: baseline; }
 .totals .grand > span:first-child { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text); }
-.totals .grand > span:last-child { font-family: var(--display); font-weight: 700; font-size: 20px; line-height: 28px;
+.totals .grand > span:last-child { font-family: var(--display); font-weight: 700; font-size: 22px; line-height: 28px;
                                    color: var(--primary); font-variant-numeric: tabular-nums; }
 .notes { margin-top: var(--s4); font-size: 13px; line-height: 20px; color: var(--text-2); max-width: 5.4in; }
 .accept { margin-top: var(--s4); display: grid; grid-template-columns: 1fr 280px; gap: 0 var(--s6); break-inside: avoid; }

@@ -54,27 +54,27 @@ PASSWORD_PATHS = {"/account", "/logout"}
 
 ACCOUNT_PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Your password | Fleet Quote Builder</title><style>
+<title>Your password | Fleet Quote Builder</title><link rel="stylesheet" href="/static/fom.css"><style>
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
- background:#f2f4f7;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#10141a}
-form{background:#fff;border:1px solid #d8dee6;border-radius:12px;padding:28px 30px;width:100%;max-width:380px;
+ background:#fafafa;font:15px/1.5 "IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933}
+form{background:#fff;border:1px solid #e4e7eb;border-top:3px solid #c85a32;border-radius:8px;padding:28px 30px;width:100%;max-width:380px;
  box-shadow:0 10px 40px rgba(16,26,38,.10)}
-h1{font-size:18px;margin:0 0 4px}
-p.sub{margin:0 0 20px;color:#5c6673;font-size:13px}
-label{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:#5c6673;margin:0 0 4px}
-input{width:100%;padding:9px 11px;border:1px solid #d8dee6;border-radius:7px;font:inherit;margin-bottom:14px}
-input:focus{outline:2px solid #e8f1fb;border-color:#066fd1}
-button{width:100%;padding:10px;border:0;border-radius:7px;background:#00274d;color:#fff;
+h1{font-family:"Barlow Semi Condensed","Arial Narrow",sans-serif;font-size:30px;line-height:34px;font-weight:700;margin:0 0 4px}
+p.sub{margin:0 0 20px;color:#52606d;font-size:14px}
+label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#52606d;margin:0 0 4px}
+input{width:100%;padding:9px 11px;border:1px solid #cbd2d9;border-radius:6px;font:inherit;margin-bottom:14px}
+input:focus{outline:2px solid #3e5c76;outline-offset:2px}
+button{width:100%;padding:10px;border:0;border-radius:6px;background:#c85a32;color:#fff;
  font:inherit;font-weight:600;cursor:pointer}
-button:hover{filter:brightness(1.15)}
+button:hover{background:#ad4925}
 .err{background:#fdecec;border:1px solid #f3c9cb;color:#a4232b;border-radius:7px;
  padding:9px 11px;font-size:13px;margin-bottom:16px}
 .ok{background:#e6f4ec;border:1px solid #bfe3cd;color:#0a7d3f;border-radius:7px;
  padding:9px 11px;font-size:13px;margin-bottom:16px}
 .note{background:#fdf3e2;border:1px solid #f0dcb8;color:#9a5b00;border-radius:7px;
  padding:9px 11px;font-size:13px;margin-bottom:16px}
-a.back{display:block;text-align:center;margin-top:14px;font-size:13px;color:#0a5fb4}
+a.back{display:block;text-align:center;margin-top:14px;font-size:13px;color:#3e5c76}
 </style></head><body><form method="POST" action="/account">
 <h1>Choose your password</h1>
 <p class="sub">__WHO__</p>
@@ -91,20 +91,20 @@ __BACK__
 
 LOGIN_PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sign in | Fleet Quote Builder</title><style>
+<title>Sign in | Fleet Quote Builder</title><link rel="stylesheet" href="/static/fom.css"><style>
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
- background:#f2f4f7;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#10141a}
-form{background:#fff;border:1px solid #d8dee6;border-radius:12px;padding:28px 30px;width:100%;max-width:360px;
+ background:#fafafa;font:15px/1.5 "IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933}
+form{background:#fff;border:1px solid #e4e7eb;border-top:3px solid #c85a32;border-radius:8px;padding:28px 30px;width:100%;max-width:360px;
  box-shadow:0 10px 40px rgba(16,26,38,.10)}
-h1{font-size:18px;margin:0 0 4px}
-p.sub{margin:0 0 20px;color:#5c6673;font-size:13px}
-label{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:#5c6673;margin:0 0 4px}
-input{width:100%;padding:9px 11px;border:1px solid #d8dee6;border-radius:7px;font:inherit;margin-bottom:14px}
-input:focus{outline:2px solid #e8f1fb;border-color:#066fd1}
-button{width:100%;padding:10px;border:0;border-radius:7px;background:#00274d;color:#fff;
+h1{font-family:"Barlow Semi Condensed","Arial Narrow",sans-serif;font-size:30px;line-height:34px;font-weight:700;margin:0 0 4px}
+p.sub{margin:0 0 20px;color:#52606d;font-size:14px}
+label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#52606d;margin:0 0 4px}
+input{width:100%;padding:9px 11px;border:1px solid #cbd2d9;border-radius:6px;font:inherit;margin-bottom:14px}
+input:focus{outline:2px solid #3e5c76;outline-offset:2px}
+button{width:100%;padding:10px;border:0;border-radius:6px;background:#c85a32;color:#fff;
  font:inherit;font-weight:600;cursor:pointer}
-button:hover{filter:brightness(1.15)}
+button:hover{background:#ad4925}
 .err{background:#fdecec;border:1px solid #f3c9cb;color:#a4232b;border-radius:7px;
  padding:9px 11px;font-size:13px;margin-bottom:16px}
 </style></head><body><form method="POST" action="/login">
@@ -119,16 +119,16 @@ __ERR__
 
 UPLOAD_PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Reference files | Fleet Quote Builder</title><style>
+<title>Reference files | Fleet Quote Builder</title><link rel="stylesheet" href="/static/fom.css"><style>
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
- background:#f2f4f7;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#10141a}
-.card{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:520px;box-shadow:0 8px 30px rgba(16,26,38,.1)}
-h1{font-size:20px;margin:0 0 6px}p{margin:0 0 18px;color:#4a5663}
+ background:#fafafa;font:15px/1.5 "IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933}
+.card{background:#fff;border-top:3px solid #c85a32;border-radius:8px;padding:28px;width:100%;max-width:520px;box-shadow:0 8px 30px rgba(16,26,38,.1)}
+h1{font-family:"Barlow Semi Condensed","Arial Narrow",sans-serif;font-size:30px;line-height:34px;font-weight:700;margin:0 0 6px}p{margin:0 0 18px;color:#4a5663}
 .row{border:1px dashed #b8c2cc;border-radius:10px;padding:14px;margin-bottom:12px}
 .row b{display:block}.st{font-size:13px;margin:2px 0 8px}.ok{color:#0a6f39}.no{color:#a45c06}
-button{background:#00274d;color:#fff;border:0;border-radius:8px;padding:9px 16px;font:inherit;cursor:pointer}
-a{color:#0a5fb4}.msg{margin-top:10px;font-size:14px}
+button{background:#3e5c76;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;cursor:pointer}
+a{color:#3e5c76}.msg{margin-top:10px;font-size:14px}
 </style></head><body><div class="card">
 <h1>Reference files</h1>
 <p>The two spreadsheets the quote builder prices from. Choose a file to replace what is on the server.</p>
