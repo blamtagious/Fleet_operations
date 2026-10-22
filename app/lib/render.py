@@ -170,15 +170,16 @@ table.items thead th { background: var(--subtle); border-top: 1px solid var(--li
 table.items thead th:first-child { border-top-left-radius: 8px; border-left: 0; }
 table.items thead th:last-child { border-top-right-radius: 8px; }
 table.items th.num { text-align: right; }
-table.items td { padding: var(--s2) var(--s4); vertical-align: top; border-bottom: 1px solid var(--line); }
+table.items td { padding: var(--s2) var(--s4); vertical-align: top; border-bottom: 1px solid var(--line); font-size: 13px; line-height: 20px; }
 table.items tr:last-child td { border-bottom: 0; }
 table.items tr { break-inside: avoid; }
-td.line { width: 48px; font-family: var(--mono); font-size: 13px; color: var(--text-2); }
+td.line { width: 48px; font-family: var(--mono); font-size: 12px; color: var(--text-2); }
 tr.group td { background: var(--surface); padding-top: var(--s4); padding-bottom: var(--s1); font-size: 12px; line-height: 16px;
               font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-2); border-bottom: 0; }
 .item { font-weight: 600; }
-.spec { color: var(--text-2); font-size: 13px; line-height: 20px; }
-.detail { white-space: pre-line; color: var(--text-2); font-size: 13px; line-height: 20px; margin-top: var(--s1); max-width: 4.6in; }
+.spec { color: var(--text-2); font-size: 12px; line-height: 16px; }
+.spec .code, .detail .code, td .code { font-size: 12px; line-height: 16px; }
+.detail { white-space: pre-line; color: var(--text-2); font-size: 12px; line-height: 16px; margin-top: var(--s1); max-width: 4.6in; }
 
 .closing { break-inside: avoid; }
 .totals { width: 280px; margin: var(--s4) 0 0 auto; background: var(--subtle); border: 1px solid var(--line-strong);
@@ -195,6 +196,42 @@ tr.group td { background: var(--surface); padding-top: var(--s4); padding-bottom
 .accept .label { margin-top: var(--s2); }
 .foot { position: fixed; bottom: 0; left: 0.75in; right: 0.75in; display: flex; justify-content: space-between;
         font-size: 13px; line-height: 20px; color: var(--text-2); }
+
+/* Density tiers: render_pdf starts at t0 and steps down until the quote fits one page. */
+.t1 .bar { padding-top: var(--s2); padding-bottom: var(--s2); }
+.t1 .head { margin-top: var(--s4); }
+.t1 .head h1 { font-size: 28px; line-height: 32px; }
+.t1 .head img { height: 48px; }
+.t1 .meta { margin-top: var(--s2); }
+.t1 .parties, .t1 .tablewrap { margin-top: var(--s4); }
+.t1 table.items td { padding-top: var(--s1); padding-bottom: var(--s1); line-height: 18px; }
+.t1 tr.group td { padding-top: var(--s2); }
+.t1 .totals { margin-top: var(--s2); padding: var(--s2) var(--s4); }
+.t1 .notes, .t1 .accept { margin-top: var(--s2); }
+.t1 .field { height: 24px; }
+
+.t2 .head h1 { font-size: 24px; line-height: 28px; }
+.t2 .head { margin-top: var(--s2); }
+.t2 .head img { height: 40px; }
+.t2 .parties p { line-height: 18px; }
+.t2 table.items td { padding-top: 2px; padding-bottom: 2px; font-size: 12px; line-height: 16px; }
+.t2 .spec, .t2 .detail { font-size: 11px; line-height: 14px; }
+.t2 .totals .row { line-height: 20px; }
+.t2 .notes { font-size: 12px; line-height: 16px; }
+
+/* t3: plain options sit two to a row */
+.t3 .head h1 { font-size: 24px; line-height: 28px; }
+.t3 .head { margin-top: var(--s2); }
+.t3 .head img { height: 40px; }
+.t3 .parties p { line-height: 18px; }
+.t3 table.items td { padding-top: 2px; padding-bottom: 2px; font-size: 12px; line-height: 16px; }
+.t3 .spec, .t3 .detail { font-size: 11px; line-height: 14px; }
+.t3 .totals .row { line-height: 20px; }
+.t3 .notes { font-size: 12px; line-height: 16px; }
+.t2 .totals, .t3 .totals { width: 320px; }
+.t3 td.half { width: 50%; }
+.t3 td.half + td.num { border-left: 0; }
+.t3 td.gap { padding: 0; width: 16px; }
 """
 
 
@@ -210,7 +247,7 @@ def _fmt_date(s: str) -> str:
     return s or ""
 
 
-def render_html(q: dict) -> str:
+def render_html(q: dict, tier: int = 0) -> str:
     c = q.get("customer", {}) or {}
     s = q.get("seller", {}) or {}
     v = q.get("vehicle", {}) or {}
@@ -243,16 +280,43 @@ def render_html(q: dict) -> str:
 
     chosen = [i for i in opts if i.get("include", True)]
     rows = []
+    plain = []   # (description, code html, price) lines with no long description
     if q.get("options_lump") and chosen:
         # One line for everything Ford builds in; upfits stay itemized below it.
         total = sum(float(i.get("price") or 0) for i in chosen)
         rows.append(_acc_row("Optional Factory Equipment", "", total))
     else:
-        rows += [_acc_row(i.get("description", ""), _code(i), i.get("price")) for i in chosen]
-    rows += [_acc_row(i.get("description", ""), _code(i), i.get("price"), i.get("details", ""))
-             for i in upfits if i.get("include", True)]
+        plain += [(i.get("description", ""), _code(i), i.get("price")) for i in chosen]
+    detailed = []
+    for i in upfits:
+        if not i.get("include", True):
+            continue
+        if (i.get("details") or "").strip():
+            detailed.append(_acc_row(i.get("description", ""), _code(i), i.get("price"), i.get("details", "")))
+        else:
+            plain.append((i.get("description", ""), _code(i), i.get("price")))
+    if tier >= 3 and len(plain) > 1:
+        # Two plain lines per row; descriptions and prices keep their own columns.
+        for k in range(0, len(plain), 2):
+            a = plain[k]
+            b = plain[k + 1] if k + 1 < len(plain) else None
+            cells = (f'<td class="half">{e(a[0])}{a[1]}</td><td class="num">{money(a[2])}</td>')
+            cells += (f'<td class="gap"></td><td class="half">{e(b[0])}{b[1]}</td><td class="num">{money(b[2])}</td>'
+                      if b else '<td colspan="3"></td>')
+            rows.append(f'<tr class="pair"><td class="line"></td>{cells}</tr>')
+    else:
+        rows += [_acc_row(d_, c_, p_) for d_, c_, p_ in plain]
+    paired = tier >= 3 and len(plain) > 1
+    if paired:
+        wide = lambda r: r.replace('<td class="line"></td><td>', '<td class="line"></td><td colspan="4">', 1)
+        rows = [wide(r) if 'class="pair"' not in r else r for r in rows]
+        detailed = [wide(r) for r in detailed]
+        veh_rows = veh_rows.replace('<td><div class="item">', '<td colspan="4"><div class="item">')
+    rows += detailed
+    colspan = 6 if paired else 3
+    desc_th = '<th colspan="4">Description</th>' if paired else "<th>Description</th>"
     acc_block = (
-        '<tr class="group"><td colspan="3">Options &amp; accessories</td></tr>\n' + "\n".join(rows)
+        f'<tr class="group"><td colspan="{colspan}">Options &amp; accessories</td></tr>\n' + "\n".join(rows)
         if rows else ""
     )
 
@@ -304,7 +368,7 @@ def render_html(q: dict) -> str:
 <html lang="en"><head><meta charset="utf-8">
 <title>{qid} — Sales quote</title>
 <style>{font_css()}
-{CSS}</style></head><body>
+{CSS}</style></head><body class="t{tier}">
 
 <div class="bar"><span class="name">Ford of Murfreesboro Fleet</span><span class="tag">Sales quote</span></div>
 
@@ -332,9 +396,9 @@ def render_html(q: dict) -> str:
 
 <div class="tablewrap">
 <table class="items">
-  <thead><tr><th>#</th><th>Description</th><th class="num">Price</th></tr></thead>
+  <thead><tr><th>#</th>{desc_th}<th class="num">Price</th></tr></thead>
   <tbody>
-    <tr class="group"><td colspan="3">Vehicle</td></tr>
+    <tr class="group"><td colspan="{colspan}">Vehicle</td></tr>
     {veh_rows}
     {acc_block}
   </tbody>
@@ -359,9 +423,26 @@ def render_html(q: dict) -> str:
 </body></html>"""
 
 
+def _pages(path: str) -> int:
+    try:
+        from pypdf import PdfReader
+        return len(PdfReader(path).pages)
+    except Exception:
+        return 1
+
+
 def render_pdf(q: dict, out_path: str) -> str:
-    """Write quote.pdf next to quote.json using headless Chrome."""
-    return html_to_pdf(render_html(q), out_path)
+    """Write quote.pdf next to quote.json using headless Chrome.
+
+    A quote is meant to be one page. Start at the roomy layout and step down
+    through tighter ones (t1..t3) until it fits; a very long quote that still
+    spills over keeps the tightest layout and runs to a second page.
+    """
+    for tier in range(4):
+        html_to_pdf(render_html(q, tier), out_path)
+        if _pages(out_path) <= 1:
+            break
+    return out_path
 
 
 def html_to_pdf(html_text: str, out_path: str) -> str:
