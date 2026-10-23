@@ -7,7 +7,7 @@
   },
   "contract": {
     "label": "State of Tennessee Statewide Contract",
-    "default_note": "Pricing per State of Tennessee Statewide Contract (SWC). Quote valid for 30 days unless otherwise noted. Applicable taxes, title and registration fees are not included."
+    "default_note": "Pricing per State of Tennessee Statewide Contract (SWC) 88762. Quote valid for 30 days unless otherwise noted. Applicable taxes, title and registration fees are not included."
   },
   "defaults": {
     "quote_valid_days": 30,
