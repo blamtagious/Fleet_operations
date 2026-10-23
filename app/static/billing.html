@@ -963,7 +963,7 @@ function renderVehicles() {
       <div id="status-${v.id}"></div>` : ''}
       <div class="field-row even3" style="margin-top:4px">
         <div class="field-group">
-          <label>Stock # / Order #</label>
+          <label>Stock #</label>
           <input type="text" id="stock-${v.id}" value="${esc(v.stock)}" placeholder="e.g. 12345"
             oninput="updateVF(${v.id},'stock',this.value)">
         </div>
