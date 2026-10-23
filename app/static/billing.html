@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Billing | Fleet Quote Builder</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap">
+<link rel="preload" href="/static/fonts/barlow-semi-condensed-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/fom.css">
 <script src="/static/vendor/pdf.min.js"></script>
 <script src="/static/vendor/xlsx.full.min.js"></script>
 <script src="/static/vendor/pdf-lib.min.js"></script>
@@ -148,22 +148,73 @@ body{font-family:Arial,sans-serif;font-size:13px;background:#f0f2f5;color:#222;}
 .doc-item .doc-del{background:none;border:none;color:#c00;cursor:pointer;font-size:13px;flex-shrink:0;}
 
 
-/* ── Same look as the quote builder ── */
-:root{--blue:#00063d;--lt-blue:#eef0f6;--accent:#0a3a8c;}
-body{font-family:Lato,"Helvetica Neue",Arial,sans-serif;background:#f2f4f7;color:#111827;}
-.topnav{display:flex;align-items:center;gap:22px;height:52px;padding:0 20px;background:#fff;border-bottom:1px solid #d1d5db;position:sticky;top:0;z-index:50;}
-.topnav h1{font-size:16px;font-weight:900;color:#00063d;margin:0;}
-.topnav a{font-size:13px;font-weight:700;text-decoration:none;color:#4b5563;padding:6px 2px;border-bottom:2px solid transparent;}
-.topnav a.on{color:#00063d;border-bottom-color:#e8710a;}
+/* ── FOM Fleet design system (tokens in /static/fom.css) ── */
+:root{--blue:var(--brand-primary);--lt-blue:var(--brand-primary-tint);--border:var(--border-strong);--label:var(--text-secondary);
+  --accent:var(--brand-primary);--green:var(--status-success-text);--lt-green:var(--status-success-bg);}
+body{font-family:var(--font-sans);font-size:14px;line-height:20px;background:var(--bg-canvas);color:var(--text-main);-webkit-font-smoothing:antialiased;}
+.topnav{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 24px;background:var(--brand-ink);border-bottom:3px solid var(--brand-accent);position:sticky;top:0;z-index:50;}
+.topnav h1{font-family:var(--font-display);font-size:20px;line-height:24px;font-weight:700;color:#fff;margin:0;}
+.topnav .tooltag{font-family:var(--font-mono);font-size:12px;line-height:16px;color:#fff;background:var(--brand-primary);border-radius:var(--radius-badge);padding:3px 8px;}
+.topnav a{font-size:14px;line-height:20px;font-weight:600;text-decoration:none;color:#fff;padding:6px 14px;border-radius:var(--radius-sm);background:rgba(255,255,255,.08);}
+.topnav a:hover{background:rgba(255,255,255,.18);}
+.topnav a.on{background:#fff;color:var(--brand-ink);}
 .topnav .sp{flex:1}
-.topnav .out{font-weight:400;font-size:12px;color:#6b7280;}
-.app{min-height:calc(100vh - 52px);}
-.form-panel{font-family:Lato,Arial,sans-serif;}
+.topnav .out{font-weight:400;font-size:13px;color:#e4e7eb;background:none;border:1px solid rgba(255,255,255,.28);padding:4px 10px;}
+.app{display:flex;min-height:calc(100vh - 51px);}
+.form-panel{font-family:var(--font-sans);background:var(--bg-surface);border-right:1px solid var(--border-subtle);padding:var(--space-6) var(--space-4) 60px;}
 .form-panel h1{display:none;}
-.section-head{background:none;color:#4b5563;border-bottom:1px solid #d1d5db;border-radius:0;padding:4px 0;font-size:10px;letter-spacing:.1em;}
-.cover-frame{width:8.5in;height:11in;border:0;background:#fff;box-shadow:0 2px 16px rgba(0,0,0,.18);}
+.subtitle{font-size:13px;color:var(--text-secondary);}
+.section-head{background:none;color:var(--text-secondary);border-bottom:1px solid var(--border-strong);border-radius:0;padding:4px 0;margin:20px 0 10px;font-size:12px;line-height:16px;font-weight:600;letter-spacing:.05em;}
+.field-group label,.tool-bar label{font-size:12px;line-height:16px;font-weight:600;letter-spacing:.05em;color:var(--text-secondary);}
+.field-group input,.field-group select,.field-group textarea,.tool-bar select,.line-row input,.search-bar{border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:6px 9px;font-size:14px;font-family:var(--font-sans);background:var(--bg-surface);color:var(--text-main);}
+.field-group input:focus,.field-group select:focus,.field-group textarea:focus,.tool-bar select:focus,.line-row input:focus,.search-bar:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--brand-primary);outline-offset:2px;border-color:var(--border-strong);}
+.tool-bar{background:var(--brand-primary-tint);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:10px 12px;}
+.tool-bar .hint,.hint{font-size:13px;line-height:18px;color:var(--text-secondary);}
+.btn{font-family:var(--font-sans);border-radius:var(--radius-sm);padding:7px 14px;font-size:13px;line-height:18px;font-weight:600;border:1px solid transparent;}
+.btn-blue{background:var(--brand-primary);color:#fff;} .btn-blue:hover{background:var(--brand-primary-hover);}
+.btn-green{background:var(--brand-accent);color:#fff;} .btn-green:hover{background:var(--brand-accent-hover);}
+.btn-outline{background:var(--bg-surface);border:1px solid var(--border-strong);color:var(--text-main);} .btn-outline:hover{background:var(--bg-subtle);border-color:var(--border-strong);color:var(--text-main);}
+.btn-red{background:var(--bg-surface);border:1px solid var(--status-alert-text);color:var(--status-alert-text);} .btn-red:hover{background:var(--status-alert-bg);}
+.vehicle-block{border:1px solid var(--border-subtle);border-radius:var(--radius-md);background:var(--bg-surface);box-shadow:var(--shadow-card);padding:12px;}
+.veh-title{font-family:var(--font-display);font-size:18px;line-height:22px;font-weight:700;color:var(--text-main);text-transform:none;}
+.pick-btn{background:var(--brand-primary-tint);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);color:var(--brand-primary);font-size:12px;font-weight:600;padding:3px 9px;}
+.pick-btn:hover{background:#dfe7ef;}
+.remove-btn,.line-row .del-btn,.doc-item .doc-del{color:var(--status-alert-text);}
+.inv-badge{background:var(--status-success-bg);color:var(--status-success-text);border:0;font-size:11px;font-weight:600;padding:2px 8px;border-radius:var(--radius-pill);}
+.upload-zone,.doc-drop{border:1.5px dashed var(--border-strong);border-radius:var(--radius-md);background:var(--bg-surface);}
+.upload-zone:hover,.doc-drop.drag-over{border-color:var(--brand-primary);background:var(--brand-primary-tint);}
+.upload-zone .ul-label,.doc-drop-label{font-size:13px;color:var(--text-secondary);}
+.upload-zone .ul-label span,.doc-drop-label span{color:var(--brand-primary);}
+.parse-status{font-size:12px;border-radius:var(--radius-sm);padding:3px 8px;}
+.parse-status.ok{background:var(--status-success-bg);color:var(--status-success-text);}
+.parse-status.err{background:var(--status-alert-bg);color:var(--status-alert-text);}
+.parse-status.wait{background:var(--status-warning-bg);color:var(--status-warning-text);}
+.add-row-btn,.add-vehicle-btn{border:1.5px dashed var(--border-strong);color:var(--brand-primary);font-family:var(--font-sans);font-size:13px;font-weight:600;border-radius:var(--radius-sm);}
+.add-row-btn:hover,.add-vehicle-btn:hover{background:var(--brand-primary-tint);border-color:var(--brand-primary);color:var(--brand-primary);}
+.doc-item{border:1px solid var(--border-subtle);border-radius:var(--radius-sm);font-size:12px;}
+.preview-panel{background:var(--bg-subtle);padding:var(--space-6);}
+.preview-panel h2{font-family:var(--font-display);font-size:24px;line-height:28px;font-weight:700;color:var(--text-main);}
+.print-btn{background:var(--brand-accent);color:#fff;border:1px solid transparent;border-radius:var(--radius-sm);padding:9px 20px;font:600 14px/20px var(--font-sans);box-shadow:none;}
+.print-btn:hover{background:var(--brand-accent-hover);}
+#pkg-btn,#cust-inv-btn,.export-inv-btn{background:var(--bg-surface)!important;color:var(--text-main)!important;border:1px solid var(--border-strong)!important;border-radius:var(--radius-sm)!important;box-shadow:none!important;font:600 14px/20px var(--font-sans)!important;padding:9px 18px!important;}
+#pkg-btn:hover,#cust-inv-btn:hover,.export-inv-btn:hover{background:var(--bg-subtle)!important;}
+#pkg-status,#save-folder-row{font-size:13px!important;color:var(--text-secondary)!important;}
+.cover-frame{width:8.5in;height:11in;border:0;background:#fff;border-radius:var(--radius-sm);box-shadow:0 2px 16px rgba(31,41,51,.14);}
+.modal{border-radius:var(--radius-md);box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-head{border-bottom:1px solid var(--border-subtle);}
+.modal-head h3{font-family:var(--font-display);font-size:22px;line-height:26px;font-weight:700;color:var(--text-main);}
+.modal-close{color:var(--text-secondary);}
+.inv-table{font-size:13px;font-variant-numeric:tabular-nums;}
+.inv-table th{background:var(--bg-subtle);color:var(--text-secondary);font-size:12px;line-height:16px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;border-top:1px solid var(--border-strong);border-bottom:1px solid var(--border-strong);}
+.inv-table td{border-bottom:1px solid var(--border-subtle);}
+.inv-table tr:hover td{background:var(--bg-subtle);}
+.inv-table tr.selected td{background:var(--brand-primary-tint);}
+.inv-table tr.sold td{background:var(--bg-surface);color:var(--text-muted);}
+.select-chk{accent-color:var(--brand-primary);}
+.modal-foot{background:var(--bg-subtle);border-top:1px solid var(--border-subtle);border-radius:0 0 var(--radius-md) var(--radius-md);}
+.sel-count,.no-inv{color:var(--text-secondary);font-size:13px;}
 input[type=file]{display:none!important;}
-.line-row input{border:1px solid var(--border);border-radius:4px;padding:5px 7px;font-size:12px;font-family:inherit;background:#fafbfd;}
+@media (max-width:900px){.app{flex-direction:column}.form-panel{width:auto;min-width:0;border-right:0}.cover-frame{width:100%}}
 @media print{.topnav{display:none!important}}
 
 /* ── PRINT ── */
@@ -177,13 +228,13 @@ input[type=file]{display:none!important;}
 </style>
 </head>
 <body>
-<nav class="topnav"><h1>Fleet Quote Builder</h1><a href="/">Quotes</a><a href="/billing" class="on">Billing</a><span class="sp"></span><a class="out" href="/logout">Sign out</a></nav>
+<nav class="topnav"><h1>Ford of Murfreesboro Fleet</h1><span class="tooltag">BILLING</span><a href="/">Quotes</a><a href="/billing" class="on">Billing</a><span class="sp"></span><a class="out" href="/logout">Sign out</a></nav>
 
 <!-- ══ INVENTORY PICKER MODAL ══ -->
 <div class="modal-overlay" id="inv-modal">
   <div class="modal">
     <div class="modal-head">
-      <h3>📦 Select Vehicles from Inventory</h3>
+      <h3>Select vehicles from inventory</h3>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -194,7 +245,7 @@ input[type=file]{display:none!important;}
       <span class="sel-count" id="sel-count">0 selected</span>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-        <button class="btn btn-green" onclick="addSelectedVehicles()">✔ Add to Billing Sheet</button>
+        <button class="btn btn-green" onclick="addSelectedVehicles()">Add to billing sheet</button>
       </div>
     </div>
   </div>
@@ -204,7 +255,7 @@ input[type=file]{display:none!important;}
 <div class="modal-overlay" id="tag-modal">
   <div class="modal" style="width:560px">
     <div class="modal-head">
-      <h3>🏷️ Create temp tags for this package?</h3>
+      <h3>Create temp tags for this package?</h3>
       <button class="modal-close" onclick="closeTagModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -236,16 +287,16 @@ input[type=file]{display:none!important;}
 
 <!-- ══ FORM PANEL ══ -->
 <div class="form-panel">
-  <h1>🚗 Billing Cover Sheet Generator</h1>
+  <h1>Billing cover sheet</h1>
   <p class="subtitle">Ford of Murfreesboro Fleet — load inventory, pick vehicles, fill customer info, print.</p>
 
   <!-- INVOICE FOLDER LOADER -->
   <div class="tool-bar" id="inv-bar">
     <div class="tb-row">
       <label>Invoices</label>
-      <button class="btn btn-blue" onclick="document.getElementById('inv-folder').click()">📂 Load Invoice Folder</button>
+      <button class="btn btn-blue" onclick="document.getElementById('inv-folder').click()">Load invoice folder</button>
       <input type="file" id="inv-folder" accept=".pdf" multiple webkitdirectory onchange="loadInvoiceFolder(event)">
-      <button class="btn btn-outline" id="pick-vehicles-btn" onclick="openModal()" style="display:none">🔍 Pick Vehicles</button>
+      <button class="btn btn-outline" id="pick-vehicles-btn" onclick="openModal()" style="display:none">Pick vehicles</button>
     </div>
     <div class="hint" id="inv-hint">Select your <em>Vehicle Invoices</em> folder — all PDFs parsed at once.</div>
     <div class="tb-row" style="margin-top:6px">
@@ -263,7 +314,7 @@ input[type=file]{display:none!important;}
       <select id="contact-select" onchange="applyContact(this.value)">
         <option value="">— select saved customer —</option>
       </select>
-      <button class="btn btn-blue" onclick="document.getElementById('contacts-csv').click()">📂 Load Contacts</button>
+      <button class="btn btn-blue" onclick="document.getElementById('contacts-csv').click()">Load contacts</button>
       <input type="file" id="contacts-csv" accept=".csv" onchange="loadContactsCSV(event)">
     </div>
     <div class="hint" id="contacts-hint">Load <em>Billing Contacts.xlsx</em> saved as CSV to enable the dropdown.</div>
@@ -359,7 +410,7 @@ input[type=file]{display:none!important;}
     <label class="doc-drop-label"><span>Attach docs</span> — drag & drop or click</label>
     <div class="doc-list" id="adj-doc-list"></div>
   </div>
-  <button class="btn btn-outline" style="width:100%;margin-top:6px;font-size:11px;padding:5px" onclick="document.getElementById('vq-folder').click()">📂 Load Vendor Quotes Folder</button>
+  <button class="btn btn-outline" style="width:100%;margin-top:6px;font-size:11px;padding:5px" onclick="document.getElementById('vq-folder').click()">Load vendor quotes folder</button>
   <input type="file" id="vq-folder" accept=".pdf" multiple webkitdirectory onchange="loadDocFolder(event,'adj','vq-hint')">
   <div class="hint" id="vq-hint" style="margin-top:4px"></div>
 
@@ -369,7 +420,7 @@ input[type=file]{display:none!important;}
     <label class="doc-drop-label"><span>Attach PO document(s)</span> — drag & drop or click</label>
     <div class="doc-list" id="po-doc-list"></div>
   </div>
-  <button class="btn btn-outline" style="width:100%;margin-top:6px;font-size:11px;padding:5px" onclick="document.getElementById('po-folder').click()">📂 Load Customer POs Folder</button>
+  <button class="btn btn-outline" style="width:100%;margin-top:6px;font-size:11px;padding:5px" onclick="document.getElementById('po-folder').click()">Load customer POs folder</button>
   <input type="file" id="po-folder" accept=".pdf" multiple webkitdirectory onchange="loadDocFolder(event,'po','po-hint')">
   <div class="hint" id="po-hint" style="margin-top:4px"></div>
 
@@ -383,16 +434,16 @@ input[type=file]{display:none!important;}
 
 <!-- ══ PREVIEW PANEL ══ -->
 <div class="preview-panel">
-  <h2>📄 Cover Sheet Preview</h2>
+  <h2>Cover sheet preview</h2>
   <div class="preview-actions">
-    <button class="print-btn" onclick="printCover()">🖨️ Print Cover Sheet</button>
-    <button class="btn btn-green" id="pkg-btn" onclick="downloadPackage()" style="padding:9px 18px;font-size:13px;display:none;box-shadow:0 2px 6px rgba(21,128,61,.25)">📦 Download Bill Package</button>
-    <button class="btn" id="cust-inv-btn" onclick="downloadCustomerInvoices()" style="padding:9px 18px;font-size:13px;background:#0369a1;color:#fff;border:none;border-radius:5px;cursor:pointer;box-shadow:0 2px 6px rgba(3,105,161,.25)">🧾 Customer Invoices</button>
-    <button class="export-inv-btn" id="export-inv-btn" onclick="exportUpdatedInventory()">📥 Export Inventory (mark sold)</button>
+    <button class="print-btn" onclick="printCover()">Print cover sheet</button>
+    <button class="btn btn-green" id="pkg-btn" onclick="downloadPackage()" style="padding:9px 18px;font-size:13px;display:none;box-shadow:0 2px 6px rgba(21,128,61,.25)">Download bill package</button>
+    <button class="btn" id="cust-inv-btn" onclick="downloadCustomerInvoices()" style="padding:9px 18px;font-size:13px;background:#0369a1;color:#fff;border:none;border-radius:5px;cursor:pointer;box-shadow:0 2px 6px rgba(3,105,161,.25)">Customer invoices</button>
+    <button class="export-inv-btn" id="export-inv-btn" onclick="exportUpdatedInventory()">Export inventory (mark sold)</button>
   </div>
   <div id="pkg-status" style="font-size:11px;color:#555;margin-bottom:8px;display:none"></div>
   <div id="save-folder-row" style="font-size:11px;color:#555;margin-bottom:10px;display:none;align-items:center;gap:8px">
-    <span>📁 Packages save to: <strong id="save-folder-name">not set</strong></span>
+    <span>Packages save to: <strong id="save-folder-name">not set</strong></span>
     <button class="btn btn-outline" style="font-size:10px;padding:3px 8px" onclick="chooseSaveFolder()">Choose folder…</button>
   </div>
   <iframe class="cover-frame" id="cover-frame" title="Cover sheet preview"></iframe>
