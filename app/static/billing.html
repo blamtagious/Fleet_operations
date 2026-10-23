@@ -215,6 +215,9 @@ body{font-family:var(--font-sans);font-size:14px;line-height:20px;background:var
 .sel-count,.no-inv{color:var(--text-secondary);font-size:13px;}
 input[type=file]{display:none!important;}
 @media (max-width:900px){.app{flex-direction:column}.form-panel{width:auto;min-width:0;border-right:0}.cover-frame{width:100%}}
+/* three equal fields whose boxes line up even if a label wraps */
+.field-row.even3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end;}
+.field-row.even3 label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 @media print{.topnav{display:none!important}}
 
 /* ── PRINT ── */
@@ -958,24 +961,24 @@ function renderVehicles() {
         <div class="ul-label"><span>Upload Invoice PDF</span> — auto-fills fields below</div>
       </div>
       <div id="status-${v.id}"></div>` : ''}
-      <div class="field-row" style="margin-top:4px">
+      <div class="field-row even3" style="margin-top:4px">
         <div class="field-group">
           <label>Stock # / Order #</label>
           <input type="text" id="stock-${v.id}" value="${esc(v.stock)}" placeholder="e.g. 12345"
             oninput="updateVF(${v.id},'stock',this.value)">
         </div>
         <div class="field-group">
-          <label>Customer Invoice #</label>
+          <label>Deal #</label>
           <input type="text" id="invno-${v.id}" value="${esc(v.invoiceNo)}" placeholder="optional"
             oninput="updateVF(${v.id},'invoiceNo',this.value)">
         </div>
         <div class="field-group">
-          <label>Invoice Total $</label>
+          <label>Selling Price $</label>
           <input type="text" id="price-${v.id}" value="${esc(v.price)}" placeholder="0.00"
             oninput="updateVF(${v.id},'price',this.value)">
         </div>
       </div>
-      ${v.invoiceNote ? `<div class="parse-status ${/^Several/.test(v.invoiceNote) ? 'err' : 'wait'}" style="margin:-4px 0 8px">Invoice #: ${esc(v.invoiceNote)}</div>` : ''}
+      ${v.invoiceNote ? `<div class="parse-status ${/^Several/.test(v.invoiceNote) ? 'err' : 'wait'}" style="margin:-4px 0 8px">Deal #: ${esc(v.invoiceNote)}</div>` : ''}
       <div class="field-row">
         <div class="field-group">
           <label>VIN</label>
@@ -1065,10 +1068,10 @@ async function parsePDF(event, vid) {
     }
     if (data) {
       if (data.vin)   { v.vin = data.vin; v.vinNote = data.vinNote; found.push('VIN'); }
-      if (data.invoiceNo && !v.invoiceNo) { v.invoiceNo = data.invoiceNo; found.push('Invoice #'); }
+      if (data.invoiceNo && !v.invoiceNo) { v.invoiceNo = data.invoiceNo; found.push('Deal #'); }
       v.invoiceNote = data.invoiceNote;
       if (data.stock) { v.stock = data.stock; found.push('Stock #'); }
-      if (data.price) { v.price = data.price; found.push('Invoice Total'); }
+      if (data.price) { v.price = data.price; found.push('Selling Price'); }
       if (data.description && !v.description) { v.description = data.description; found.push('Description'); }
       if (data.fleetPO && !document.getElementById('fleet-po').value) {
         document.getElementById('fleet-po').value = data.fleetPO;
