@@ -353,11 +353,9 @@ def render_html(q: dict, tier: int = 0) -> str:
     contact = e(c.get("name", ""))
     if c.get("title"):
         contact += f", {e(c.get('title'))}"
-    fin = c.get("fin", "")
     cust_lines = [
         f'<p class="name">{e(c.get("org", ""))}</p>',
         f'<p class="sub">{contact}</p>' if contact else "",
-        f'<p class="sub">FIN code <span class="code">{e(fin)}</span></p>' if fin else "",
     ]
     cust_block = "\n      ".join(x for x in cust_lines if x)
 
@@ -366,15 +364,15 @@ def render_html(q: dict, tier: int = 0) -> str:
 
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
-<title>{qid} — Sales quote</title>
+<title>{qid} — Sales Quotation</title>
 <style>{font_css()}
 {CSS}</style></head><body class="t{tier}">
 
-<div class="bar"><span class="name">Ford of Murfreesboro Fleet</span><span class="tag">Sales quote</span></div>
+<div class="bar"><span class="name">Ford of Murfreesboro Fleet</span><span class="tag">Sales Quotation</span></div>
 
 <div class="head">
   <div>
-    <h1>Sales quote</h1>
+    <h1>Sales Quotation</h1>
     <div class="meta">
       <div><p class="label">Quote ID</p><span class="code" style="color:var(--text)">{qid}</span></div>
       <div><p class="label">Date</p><span class="v">{e(_fmt_date(q.get('quote_date','')))}</span></div>
