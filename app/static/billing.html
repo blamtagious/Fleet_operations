@@ -445,6 +445,11 @@ input[type=file]{display:none!important;}
     <button class="export-inv-btn" id="export-inv-btn" onclick="exportUpdatedInventory()">Export inventory (mark sold)</button>
   </div>
   <div id="pkg-status" style="font-size:11px;color:#555;margin-bottom:8px;display:none"></div>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:11px;color:#555;flex-wrap:wrap">
+    <button class="btn btn-outline" id="log-btn" style="font-size:11px;padding:4px 10px" onclick="logBill('', false)">Log this bill</button>
+    <a href="/api/billing/log.csv" style="color:#3e5c76">Download log (CSV)</a>
+    <span id="log-status" style="display:none"></span>
+  </div>
   <div id="save-folder-row" style="font-size:11px;color:#555;margin-bottom:10px;display:none;align-items:center;gap:8px">
     <span>Packages save to: <strong id="save-folder-name">not set</strong></span>
     <button class="btn btn-outline" style="font-size:10px;padding:3px 8px" onclick="chooseSaveFolder()">Choose folder…</button>
@@ -1537,10 +1542,38 @@ async function downloadPackage() {
     statusEl.textContent = `✅ Package ready — cover sheet + ${appended} invoice${appended!==1?'s':''} + ${extraDocs} supporting doc${extraDocs!==1?'s':''}.`
       + (savedAs ? ` Copy saved to ${saveDirHandle.name}/${savedAs}.` : saveDirHandle ? ' ⚠ Could not save a copy to the folder (permission denied?).' : '');
     setTimeout(() => { statusEl.style.display = 'none'; }, savedAs ? 8000 : 4000);
+    logBill(pkgName, true);
     openTagModal(pkgName);
   } catch(err) {
     statusEl.textContent = `❌ Error: ${err.message}`;
   }
+}
+
+// ══════════════════════════════════════
+// BILLING LOG (one row per vehicle, Ford invoice # = deal number)
+// ══════════════════════════════════════
+async function logBill(pkgName, quiet) {
+  const el = document.getElementById('log-status');
+  const btn = document.getElementById('log-btn');
+  if (!vehicles.some(x => x.vin || x.stock || x.invoiceNo)) { if (!quiet) { el.style.display = ''; el.textContent = 'Add a vehicle first.'; } return; }
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/billing/log', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bill: billingPayload(), package: pkgName || '' }) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || ('Server said ' + r.status));
+    const bits = [];
+    if (j.logged) bits.push(`${j.logged} vehicle${j.logged > 1 ? 's' : ''} logged`);
+    if (j.duplicates) bits.push(`${j.duplicates} already in the log`);
+    if (!j.sheet) bits.push('saved to the log file (Google Sheet not connected on this server)');
+    else if (j.error) bits.push(`⚠ Sheet not updated yet (${j.error}); ${j.pending} waiting and will retry on the next bill`);
+    else if (j.sent) bits.push(`${j.sent} row${j.sent > 1 ? 's' : ''} added to the Billing Log sheet`);
+    el.textContent = '📒 ' + (bits.join(' · ') || 'Nothing new to log.');
+    el.style.display = '';
+  } catch (err) {
+    el.textContent = '⚠ Could not log this bill: ' + err.message;
+    el.style.display = '';
+  } finally { btn.disabled = false; }
 }
 
 // ══════════════════════════════════════
