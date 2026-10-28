@@ -7,6 +7,7 @@ a mounted volume instead, so every path is overridable by environment variable:
     FLEETQUOTE_REF     folder holding the two .xlsx   (default: the repo root)
     FLEETQUOTE_AUTH    "1" to require a login         (default: off)
     FLEETQUOTE_SECRET  session signing key            (required when AUTH is on)
+    FLEETQUOTE_SHEET_ID / FLEETQUOTE_GOOGLE_KEY   log each bill to a Google Sheet (see billinglog.py)
     PORT               port to listen on              (hosts set this for you)
 """
 

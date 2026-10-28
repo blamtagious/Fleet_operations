@@ -35,7 +35,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from lib import (accessories, auth, billing, build, config, finlookup, identity, pricing,  # noqa: E402
+from lib import (accessories, auth, billing, billinglog, build, config, finlookup, identity, pricing,  # noqa: E402
                  render, specparse, store, upfitparse)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -335,6 +335,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self._serve_file(query.get("path", ""))
             if path == "/api/backup":
                 return self._backup()
+            if path == "/api/billing/log.csv":
+                return self._send(
+                    200, billinglog.csv_bytes(), "text/csv; charset=utf-8",
+                    {"Content-Disposition": 'attachment; filename="billing-log.csv"'},
+                )
             return self._err("Not found", 404)
         except Exception as exc:  # surfaced in the UI
             return self._err(exc, 500)
@@ -596,6 +601,11 @@ class Handler(BaseHTTPRequestHandler):
     def _billing(self, path, data):
         """Billing cover sheet and customer invoices, rendered from the Billing page's data."""
         which = path.rsplit("/", 1)[-1]
+        if which == "log":
+            me = self._me()
+            who = me.get("name") or me.get("username") or me.get("initials") or ""
+            res = billinglog.log_bill(data.get("bill") or {}, data.get("package", ""), who)
+            return self._json({"ok": True, **res})
         if which == "cover-html":
             return self._json({"ok": True, "html": billing.cover_html(data)})
         if which not in ("cover-pdf", "invoices-pdf"):
