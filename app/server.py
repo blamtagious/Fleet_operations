@@ -35,7 +35,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from lib import (accessories, auth, billing, build, config, finlookup, identity, pricing,  # noqa: E402
+from lib import (accessories, auth, billing, build, config, finlookup, identity, inventory, pricing,  # noqa: E402
                  render, specparse, store, upfitparse)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -286,6 +286,19 @@ class Handler(BaseHTTPRequestHandler):
                 return self._static("index.html")
             if path == "/billing":
                 return self._static("billing.html")
+            if path == "/inventory":
+                return self._static("inventory.html")
+            if path == "/api/inventory":
+                return self._json({"ok": True, "me": self._who(), **inventory.payload()})
+            if path == "/api/inventory/history":
+                return self._json({"ok": True, "history": inventory.history(query.get("key", ""))})
+            if path == "/api/inventory/export":
+                keys = [k for k in query.get("keys", "").split(",") if k]
+                return self._send(
+                    200, inventory.export_xlsx(keys),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    {"Content-Disposition": 'attachment; filename="fleet-inventory.xlsx"'},
+                )
             if path.startswith("/static/"):
                 return self._static(path[len("/static/"):])
             if path == "/upload":
@@ -347,6 +360,11 @@ class Handler(BaseHTTPRequestHandler):
             return self._do_account()
         if not self._gate(path):
             return
+        if path == "/api/inventory/upload":
+            try:
+                return self._inventory_upload()
+            except Exception as exc:
+                return self._err(str(exc), 400 if isinstance(exc, ValueError) else 500)
         if path in ("/api/ref-upload", "/api/accessories-import"):
             try:
                 return self._ref_upload() if path == "/api/ref-upload" else self._accessories_import()
@@ -373,6 +391,12 @@ class Handler(BaseHTTPRequestHandler):
                 return self._pdf(data)
             if path.startswith("/api/billing/"):
                 return self._billing(path, data)
+            if path == "/api/inventory/edit":
+                n = inventory.apply_edit(data.get("keys") or [], data.get("fields") or {}, self._who())
+                return self._json({"ok": True, "changed": n, **inventory.payload()})
+            if path == "/api/inventory/upfitter":
+                inventory.add_upfitter(data.get("name", ""))
+                return self._json({"ok": True, **inventory.payload()})
             if path == "/api/upfit-parse":
                 f = (data.get("files") or [{}])[0]
                 src = f.get("path") or self._stage(f.get("name"), f.get("data"))
@@ -524,6 +548,19 @@ class Handler(BaseHTTPRequestHandler):
         if not res["imported"]:
             return self._err("No priced rows found. Expected the BED COVERS, RUNNING BOARDS and FLOOR MATS sheets.")
         return self._json({"ok": True, **res})
+
+    def _who(self) -> str:
+        """Name stamped on inventory edits and uploads."""
+        me = self._me()
+        return me.get("name") or me.get("initials") or me.get("username") or "Unknown"
+
+    def _inventory_upload(self):
+        name = (urllib.parse.parse_qs(self.path.partition("?")[2]).get("name") or ["upload"])[0]
+        n = int(self.headers.get("Content-Length") or 0)
+        if n <= 0 or n > MAX_UPLOAD:
+            return self._err("Empty or too large a file.")
+        res = inventory.ingest(self.rfile.read(n), name, self._who())
+        return self._json({"ok": True, **res, **inventory.payload()})
 
     def _ref_upload(self):
         kind = (urllib.parse.parse_qs(self.path.partition("?")[2]).get("kind") or [""])[0]

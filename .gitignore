@@ -8,3 +8,6 @@ upfit/
 config/users.json
 *.xlsx
 Backups/
+# inventory dashboard data: customer names, never committed
+/inventory/
+*.csv
