@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventory | Ford of Murfreesboro Fleet</title>
+<link rel="preload" href="/static/fonts/barlow-semi-condensed-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/fom.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font:15px/22px var(--font-sans);color:var(--text-main);background:var(--bg-canvas);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+.topnav{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 24px;background:var(--brand-ink);border-bottom:3px solid var(--brand-accent);position:sticky;top:0;z-index:50}
+.topnav h1{font-family:var(--font-display);font-size:20px;line-height:24px;font-weight:700;color:#fff;margin:0}
+.topnav .tooltag{font-family:var(--font-mono);font-size:12px;line-height:16px;color:#fff;background:var(--brand-primary);border-radius:var(--radius-badge);padding:3px 8px}
+.topnav a{font-size:14px;line-height:20px;font-weight:600;text-decoration:none;color:#fff;padding:6px 14px;border-radius:var(--radius-sm);background:rgba(255,255,255,.08)}
+.topnav a:hover{background:rgba(255,255,255,.18)}
+.topnav a.on{background:#fff;color:var(--brand-ink)}
+.topnav .sp{flex:1}
+.topnav a.out{background:none;font-weight:500;color:#cbd2d9}
+main{max-width:1440px;margin:0 auto;padding:20px 24px 120px}
+@media (max-width:700px){main{padding:14px 12px 140px}.topnav{padding:10px 12px;gap:8px}}
+
+.fresh{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;font-size:13px;line-height:18px;color:var(--text-secondary);margin-bottom:14px}
+.fresh b{font-weight:600;color:var(--text-main)}
+.fresh .old{color:var(--status-warning-text);font-weight:600}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:10px;margin-bottom:18px}
+.tile{text-align:left;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);box-shadow:var(--shadow-card);padding:10px 12px 11px;cursor:pointer;min-height:84px}
+.tile:hover{border-color:var(--border-strong)}
+.tile.on{border-color:var(--brand-primary);box-shadow:inset 0 0 0 1px var(--brand-primary);background:var(--brand-primary-tint)}
+.tile .lbl{min-height:32px;display:flex;align-items:flex-end;font-size:12px;line-height:16px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary)}
+.tile .num{font-family:var(--font-display);font-weight:700;font-size:34px;line-height:36px;margin-top:2px}
+.tile .sub{font-size:12px;line-height:16px;color:var(--text-muted)}
+
+.views{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--border-strong);margin-bottom:14px}
+.views button{background:none;border:0;border-bottom:3px solid transparent;padding:8px 14px;font-weight:600;color:var(--text-secondary);cursor:pointer;margin-bottom:-1px}
+.views button.on{color:var(--brand-ink);border-bottom-color:var(--brand-accent)}
+.views .n{display:inline-block;min-width:22px;text-align:center;font-size:12px;line-height:18px;padding:0 6px;border-radius:var(--radius-pill);background:var(--bg-subtle);margin-left:4px}
+.views .n.hot{background:var(--status-alert-bg);color:var(--status-alert-text)}
+
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.filters input[type=search]{flex:1 1 240px;min-width:180px}
+input[type=search],input[type=text],select,textarea{padding:8px 10px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:#fff;min-height:38px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--brand-primary);outline-offset:1px}
+.btn{background:var(--brand-primary);color:#fff;border:0;border-radius:var(--radius-sm);padding:8px 14px;font-weight:600;cursor:pointer;min-height:38px;text-decoration:none;display:inline-flex;align-items:center}
+.btn:hover{background:var(--brand-primary-hover)}
+.btn.ghost{background:#fff;color:var(--brand-primary);border:1px solid var(--border-strong)}
+.btn.accent{background:var(--brand-accent)}.btn.accent:hover{background:var(--brand-accent-hover)}
+.btn:disabled{opacity:.5;cursor:default}
+.count{font-size:13px;color:var(--text-secondary);margin-left:auto}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chip{border:1px solid var(--border-strong);background:#fff;border-radius:var(--radius-pill);padding:4px 12px;font-size:13px;line-height:18px;cursor:pointer}
+.chip.on{background:var(--brand-ink);border-color:var(--brand-ink);color:#fff}
+
+.tablewrap{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);box-shadow:var(--shadow-card);overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;line-height:20px}
+th{position:sticky;top:0;background:var(--bg-subtle);text-align:left;font-size:12px;line-height:16px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary);padding:9px 10px;border-bottom:1px solid var(--border-strong);white-space:nowrap;cursor:pointer;user-select:none}
+th.nosort{cursor:default}
+td{padding:9px 10px;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:#f7f9fb}
+tbody tr.sel{background:var(--brand-primary-tint)}
+td.ck,th.ck{width:36px;padding-right:0}
+td.ck input,th.ck input{width:18px;height:18px}
+.mono{font-family:var(--font-mono);font-size:13px}
+.dim{color:var(--text-muted)}
+.small{font-size:12px;line-height:16px;color:var(--text-secondary)}
+.num-r{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-size:12px;line-height:16px;font-weight:600;padding:2px 8px;border-radius:var(--radius-badge);white-space:nowrap;background:var(--bg-subtle);color:var(--text-secondary)}
+.pill.s-Sold{background:var(--status-success-bg);color:var(--status-success-text)}
+.pill.s-Quoted{background:var(--status-warning-bg);color:var(--status-warning-text)}
+.pill.s-Available{background:var(--brand-primary-tint);color:var(--brand-primary-hover)}
+.pill.s-none{background:var(--status-alert-bg);color:var(--status-alert-text)}
+.why{color:var(--status-alert-text);font-size:13px;line-height:18px}
+.more{padding:12px;text-align:center}
+.empty{padding:40px 20px;text-align:center;color:var(--text-secondary)}
+.empty h2{font-family:var(--font-display);font-size:24px;line-height:28px;margin:0 0 6px;color:var(--text-main)}
+
+.bulk{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--brand-ink);color:#fff;padding:10px 16px;display:none;flex-wrap:wrap;gap:8px;align-items:center;border-top:3px solid var(--brand-accent)}
+.bulk.on{display:flex}
+.bulk b{margin-right:6px}
+.bulk select,.bulk input{color:var(--text-main);min-width:150px;flex:1 1 150px;max-width:240px}
+
+.scrim{position:fixed;inset:0;background:rgba(31,41,51,.35);z-index:60;display:none}
+.scrim.on{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:#fff;z-index:61;box-shadow:-8px 0 30px rgba(16,26,38,.18);transform:translateX(105%);transition:transform .16s ease;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+@media (prefers-reduced-motion:reduce){.drawer{transition:none}}
+.drawer header{padding:16px 18px 12px;border-bottom:1px solid var(--border-subtle);display:flex;gap:10px;align-items:flex-start}
+.drawer header h2{font-family:var(--font-display);font-size:24px;line-height:28px;margin:0}
+.drawer header .x{margin-left:auto;background:none;border:0;font-size:26px;line-height:26px;cursor:pointer;padding:4px 8px;color:var(--text-secondary)}
+.drawer .scroll{overflow-y:auto;padding:14px 18px 24px;flex:1}
+.drawer label{display:block;font-size:12px;line-height:16px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary);margin:12px 0 4px}
+.drawer select,.drawer input[type=text],.drawer textarea{width:100%}
+.drawer textarea{min-height:70px;resize:vertical}
+.drawer label.check,.check{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:14px;text-transform:none;letter-spacing:0;font-weight:400;color:var(--text-main)}
+.check input{width:18px;height:18px}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:14px;margin:14px 0 0}
+.facts dt{color:var(--text-secondary)}.facts dd{margin:0}
+.hist{font-size:13px;line-height:18px;color:var(--text-secondary);margin:6px 0 0;padding:0;list-style:none}
+.hist li{padding:5px 0;border-bottom:1px solid var(--border-subtle)}
+.drawer footer{padding:12px 18px;border-top:1px solid var(--border-subtle);display:flex;gap:8px;align-items:center}
+.note{background:var(--status-warning-bg);color:var(--status-warning-text);border-radius:var(--radius-sm);padding:8px 10px;font-size:13px;line-height:18px;margin-top:12px}
+.note.bad{background:var(--status-alert-bg);color:var(--status-alert-text)}
+.note.good{background:var(--status-success-bg);color:var(--status-success-text)}
+
+.drop{border:2px dashed var(--border-strong);border-radius:var(--radius-md);background:#fff;padding:34px 20px;text-align:center;color:var(--text-secondary)}
+.drop.hot{border-color:var(--brand-primary);background:var(--brand-primary-tint)}
+.drop h2{font-family:var(--font-display);font-size:24px;line-height:28px;margin:0 0 6px;color:var(--text-main)}
+.srcs{margin-top:16px}
+.srcs td,.srcs th{cursor:default}
+.toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--brand-ink);color:#fff;padding:9px 16px;border-radius:var(--radius-sm);z-index:80;font-size:14px;display:none;max-width:90vw}
+.toast.on{display:block}
+</style>
+</head>
+<body>
+<nav class="topnav"><h1>Ford of Murfreesboro Fleet</h1><span class="tooltag">INVENTORY</span><a href="/">Quotes</a><a href="/billing">Billing</a><a href="/inventory" class="on">Inventory</a><span class="sp"></span><a class="out" href="/logout">Sign out</a></nav>
+
+<main>
+  <div class="fresh" id="fresh"></div>
+  <div class="tiles" id="tiles"></div>
+  <div class="views" id="views"></div>
+
+  <section id="v-list">
+    <div class="chips" id="chips"></div>
+    <div class="filters">
+      <input type="search" id="q" placeholder="Search stock #, VIN, order, customer, notes" autocomplete="off">
+      <select id="f-line" aria-label="Vehicle"></select>
+      <select id="f-status" aria-label="Status"></select>
+      <select id="f-loc" aria-label="Upfitter"></select>
+      <label class="check" id="canc-wrap"><input type="checkbox" id="f-canc"> Show cancelled</label>
+      <span class="count" id="count"></span>
+      <a class="btn ghost" id="dl" href="/api/inventory/export">Download Excel</a>
+    </div>
+    <div class="tablewrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
+      <div class="more" id="more"></div></div>
+  </section>
+
+  <section id="v-upload" hidden>
+    <div class="drop" id="drop">
+      <h2>Weekly upload</h2>
+      <p>Drop in whichever exports you have today: Ford Pro order status, Ford inventory, Tess's list, the Ford sold-VIN report. Each file is recognised by its columns. Anything you skip keeps last week's version.</p>
+      <p><label class="btn accent">Choose files<input type="file" id="file" multiple accept=".xlsx,.csv" hidden></label></p>
+      <div id="upres"></div>
+    </div>
+    <div class="tablewrap srcs"><table><thead><tr><th class="nosort">Source</th><th class="nosort">Last loaded</th><th class="nosort">By</th><th class="nosort">File</th><th class="nosort">Rows</th></tr></thead><tbody id="srcs"></tbody></table></div>
+  </section>
+</main>
+
+<div class="bulk" id="bulk">
+  <b id="bulk-n"></b>
+  <select id="b-status" aria-label="Set status"></select>
+  <input type="text" id="b-cust" placeholder="Set customer" list="custs" autocomplete="off">
+  <select id="b-loc" aria-label="Set upfitter"></select>
+  <select id="b-done" aria-label="Upfit complete"><option value="">Upfit complete: no change</option><option value="1">Upfit complete: yes</option><option value="0">Upfit complete: no</option></select>
+  <button class="btn accent" id="b-apply">Apply</button>
+  <button class="btn ghost" id="b-clear">Clear</button>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Vehicle details">
+  <header><div><h2 id="d-title"></h2><div class="small" id="d-sub"></div></div><button class="x" id="d-x" aria-label="Close">&times;</button></header>
+  <div class="scroll">
+    <div id="d-flags"></div>
+    <label for="d-status">Status</label><select id="d-status"></select>
+    <label for="d-cust">Customer</label><input type="text" id="d-cust" list="custs" autocomplete="off">
+    <label class="check"><input type="checkbox" id="d-unc"> Customer not confirmed yet</label>
+    <label for="d-loc">Upfitter</label><select id="d-loc"></select>
+    <label class="check"><input type="checkbox" id="d-done"> Upfit complete, ready for delivery</label>
+    <label for="d-notes">Notes</label><textarea id="d-notes"></textarea>
+    <dl class="facts" id="d-facts"></dl>
+    <label>Change history</label><ul class="hist" id="d-hist"></ul>
+  </div>
+  <footer><button class="btn accent" id="d-save">Save</button><button class="btn ghost" id="d-cancel">Cancel</button><span class="small" id="d-stamp"></span></footer>
+</aside>
+<datalist id="custs"></datalist>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ACTIVE = ['Ordered','Scheduled','In Production','In Transit','On Ground','At Upfitter','Ready for Delivery','Billed Out'];
+const S = {units: [], view: 'vehicles', stage: '', flag: '', sel: new Set(), sort: null, dir: 1, limit: 250, open: null};
+let D = {};
+
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 3200); }
+function fmtDate(iso){ if(!iso) return ''; const p = iso.slice(0,10).split('-'); return p.length === 3 ? `${+p[1]}/${+p[2]}/${p[0].slice(2)}` : iso; }
+function daysAgo(iso){ return Math.floor((Date.now() - new Date(iso).getTime()) / 864e5); }
+
+async function api(path, opts){
+  const r = await fetch(path, opts);
+  if(r.status === 401){ location.href = '/login'; throw new Error('Signed out'); }
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error || 'Something went wrong.');
+  return j;
+}
+function take(j){
+  D = j; S.units = j.units;
+  const known = new Set(S.units.map(u => u.key));
+  S.sel.forEach(k => known.has(k) || S.sel.delete(k));
+  $('#custs').innerHTML = j.customers.map(c => `<option value="${esc(c)}">`).join('');
+  render();
+}
+async function load(){ try { take(await api('/api/inventory')); } catch(e){ toast(e.message); } }
+
+function inView(u){
+  if(S.view === 'sold') return u.stage === 'Sold';
+  if(S.view === 'attention') return u.flags.length > 0 && (!S.flag || u.flags.includes(S.flag));
+  if(u.stage === 'Cancelled') return $('#f-canc').checked && !S.stage;
+  if(u.stage === 'Sold') return false;
+  return !S.stage || u.stage === S.stage;
+}
+function matches(u){
+  const q = $('#q').value.trim().toLowerCase();
+  if(q){
+    const hay = [u.stock,u.vin,u.order,u.customer,u.notes,u.vline,u.body,u.color,u.location,u.po,u.cust_ref].join(' ').toLowerCase();
+    if(!q.split(/\s+/).every(w => hay.includes(w))) return false;
+  }
+  const line = $('#f-line').value, st = $('#f-status').value, loc = $('#f-loc').value;
+  if(line && u.vline !== line) return false;
+  if(st && (st === '-' ? u.status : u.status !== st)) return false;
+  if(loc && (loc === '-' ? u.location : u.location !== loc)) return false;
+  return true;
+}
+const COLS = [
+  ['Stock #', u => u.stock || '', u => `<span class="mono">${esc(u.stock) || '<span class="dim">no VIN</span>'}</span>`],
+  ['Order', u => String(u.order || ''), u => `<span class="mono">${esc(u.order)}</span>`],
+  ['Vehicle', u => `${u.vline} ${u.year}`, u => `${esc(u.year || '')} ${esc(u.vline)}<div class="small">${esc(u.body || u.rep_model || '')}${u.color ? ' &middot; ' + esc(u.color) : ''}</div>`],
+  ['Stage', u => D.stages.indexOf(u.stage), u => `${esc(u.stage)}${u.location ? `<div class="small">${esc(u.location)}</div>` : ''}`],
+  ['Status', u => u.status || 'zz', u => u.status ? `<span class="pill s-${esc(u.status.split(' ')[0])}">${esc(u.status)}</span>` : (ACTIVE.indexOf(u.stage) >= 4 && u.stage !== 'Billed Out' ? '<span class="pill s-none">Unassigned</span>' : '<span class="dim">&ndash;</span>')],
+  ['Customer', u => (u.customer || 'zzz').toLowerCase(), u => `${esc(u.customer)}${u.unconfirmed ? ' <span class="pill s-Quoted">unconfirmed</span>' : ''}${u.customer_from_ford ? '<div class="small">from the Ford order</div>' : ''}`],
+  ['Days', u => u.days == null ? -1 : u.days, u => u.days == null ? '' : u.days, 'num-r'],
+  ['Notes', u => u.notes || 'zzz', u => `<span class="small">${esc(u.notes)}</span>`],
+];
+function rows(){
+  let list = S.units.filter(u => inView(u) && matches(u));
+  if(S.sort != null){
+    const f = COLS[S.sort][1];
+    list = list.slice().sort((a,b) => { const x = f(a), y = f(b); return (x < y ? -1 : x > y ? 1 : 0) * S.dir; });
+  }
+  return list;
+}
+
+function render(){
+  // freshness
+  const order = ['orders','inventory','tess','sales'];
+  $('#fresh').innerHTML = S.units.length ? order.map(k => {
+    const s = D.sources[k];
+    if(!s) return `<span>${esc(D.source_labels[k])}: <span class="old">not loaded</span></span>`;
+    const d = daysAgo(s.at);
+    const when = s.asof || s.at, d2 = daysAgo(when);
+    return `<span>${esc(D.source_labels[k])}: <b>${s.asof ? 'data through ' : 'loaded '}${fmtDate(when)}</b>${d2 > 8 ? ` <span class="old">(${d2} days old)</span>` : ''}</span>`;
+  }).join('') : '';
+
+  // tiles
+  const by = {}; S.units.forEach(u => by[u.stage] = (by[u.stage] || 0) + 1);
+  const active = S.units.filter(u => u.stage !== 'Sold' && u.stage !== 'Cancelled').length;
+  const avail = S.units.filter(u => u.stage === 'On Ground' && u.status === 'Available').length;
+  const tile = (key, label, n, sub) => `<button class="tile${S.view === 'vehicles' && S.stage === key ? ' on' : ''}" data-stage="${esc(key)}"><div class="lbl">${esc(label)}</div><div class="num">${n}</div><div class="sub">${sub || '&nbsp;'}</div></button>`;
+  $('#tiles').innerHTML = tile('', 'All active', active) + ACTIVE.map(s => tile(s, s, by[s] || 0, s === 'On Ground' ? `${avail} available` : '')).join('');
+
+  // views
+  const att = S.units.filter(u => u.flags.length).length;
+  const v = (k, label, n, hot) => `<button data-view="${k}" class="${S.view === k ? 'on' : ''}">${label}${n == null ? '' : `<span class="n${hot && n ? ' hot' : ''}">${n}</span>`}</button>`;
+  $('#views').innerHTML = v('vehicles','Vehicles') + v('attention','Needs attention',att,true) + v('sold','Sold',by['Sold'] || 0) + v('upload','Upload');
+  $('#v-list').hidden = S.view === 'upload'; $('#v-upload').hidden = S.view !== 'upload';
+  if(S.view === 'upload'){ renderSources(); renderBulk(); return; }
+
+  // attention chips
+  const chips = $('#chips');
+  if(S.view === 'attention'){
+    const c = {}; S.units.forEach(u => u.flags.forEach(f => c[f] = (c[f] || 0) + 1));
+    chips.innerHTML = `<button class="chip${S.flag ? '' : ' on'}" data-flag="">All (${att})</button>` + Object.keys(c).sort((a,b) => c[b] - c[a]).map(f => `<button class="chip${S.flag === f ? ' on' : ''}" data-flag="${esc(f)}">${esc(f)} (${c[f]})</button>`).join('');
+  } else chips.innerHTML = '';
+  $('#canc-wrap').style.display = S.view === 'vehicles' ? '' : 'none';
+
+  // filters
+  const keep = (id, opts) => { const el = $(id), cur = el.value; el.innerHTML = opts; el.value = cur; if(el.value !== cur) el.value = ''; };
+  const lines = [...new Set(S.units.map(u => u.vline).filter(Boolean))].sort();
+  keep('#f-line', '<option value="">All vehicles</option>' + lines.map(l => `<option>${esc(l)}</option>`).join(''));
+  keep('#f-status', '<option value="">Any status</option><option value="-">Unassigned</option>' + D.statuses.map(s => `<option>${esc(s)}</option>`).join(''));
+  keep('#f-loc', '<option value="">Any upfitter</option><option value="-">No upfitter</option>' + D.upfitters.map(s => `<option>${esc(s)}</option>`).join(''));
+  keep('#b-status', '<option value="">Status: no change</option>' + D.statuses.map(s => `<option>${esc(s)}</option>`).join(''));
+  keep('#b-loc', '<option value="">Upfitter: no change</option><option value="-">Clear upfitter</option>' + D.upfitters.map(s => `<option>${esc(s)}</option>`).join(''));
+
+  // table
+  const list = rows(), shown = list.slice(0, S.limit), attn = S.view === 'attention';
+  const allSel = shown.length && shown.every(u => S.sel.has(u.key));
+  $('#thead').innerHTML = `<tr><th class="ck nosort"><input type="checkbox" id="all" aria-label="Select all shown" ${allSel ? 'checked' : ''}></th>` +
+    COLS.map((c,i) => `<th data-sort="${i}">${c[0]}${S.sort === i ? (S.dir > 0 ? ' &uarr;' : ' &darr;') : ''}</th>`).join('') + (attn ? '<th class="nosort">Why</th>' : '') + '</tr>';
+  $('#tbody').innerHTML = shown.map(u => `<tr data-key="${esc(u.key)}" class="${S.sel.has(u.key) ? 'sel' : ''}"><td class="ck"><input type="checkbox" ${S.sel.has(u.key) ? 'checked' : ''} aria-label="Select"></td>` +
+    COLS.map(c => `<td class="${c[3] || ''}">${c[2](u)}</td>`).join('') + (attn ? `<td class="why">${u.flags.map(esc).join('<br>')}</td>` : '') + '</tr>').join('');
+  $('#count').textContent = `${list.length} vehicle${list.length === 1 ? '' : 's'}`;
+  $('#more').innerHTML = !S.units.length ? `<div class="empty"><h2>No vehicles loaded yet</h2><p>Open the Upload tab and drop in this week's exports.</p></div>`
+    : !list.length ? '<div class="empty">Nothing matches.</div>'
+    : list.length > shown.length ? `<button class="btn ghost" id="showall">Show all ${list.length}</button>` : '';
+  $('#more').style.display = $('#more').innerHTML ? '' : 'none';
+  $('#dl').href = '/api/inventory/export' + (list.length && list.length < S.units.length && list.length <= 150 ? '?keys=' + encodeURIComponent(list.map(u => u.key).join(',')) : '');
+  $('#dl').textContent = list.length && list.length < S.units.length && list.length <= 150 ? 'Download these' : 'Download Excel';
+  renderBulk();
+}
+function renderBulk(){
+  const n = S.sel.size;
+  $('#bulk').classList.toggle('on', n > 0 && S.view !== 'upload');
+  $('#bulk-n').textContent = `${n} selected`;
+}
+function renderSources(){
+  $('#srcs').innerHTML = Object.keys(D.source_labels).map(k => { const s = D.sources[k];
+    return `<tr><td>${esc(D.source_labels[k])}</td>` + (s ? `<td>${fmtDate(s.at)}</td><td>${esc(s.by)}</td><td class="small">${esc(s.file)}</td><td>${s.rows}</td>` : '<td class="dim" colspan="4">Not loaded yet</td>') + '</tr>'; }).join('');
+}
+
+// ---- events
+$('#tiles').onclick = e => { const b = e.target.closest('.tile'); if(!b) return; S.view = 'vehicles'; S.stage = b.dataset.stage; S.limit = 250; render(); };
+$('#views').onclick = e => { const b = e.target.closest('button'); if(!b) return; S.view = b.dataset.view; S.limit = 250; if(S.view !== 'vehicles') S.stage = ''; render(); };
+$('#chips').onclick = e => { const b = e.target.closest('.chip'); if(!b) return; S.flag = b.dataset.flag; render(); };
+['#q','#f-line','#f-status','#f-loc','#f-canc'].forEach(id => $(id).addEventListener('input', () => { S.limit = 250; render(); }));
+$('#thead').onclick = e => {
+  if(e.target.id === 'all'){ rows().slice(0, S.limit).forEach(u => e.target.checked ? S.sel.add(u.key) : S.sel.delete(u.key)); return render(); }
+  const th = e.target.closest('th[data-sort]'); if(!th) return;
+  const i = +th.dataset.sort; if(S.sort === i) S.dir = -S.dir; else { S.sort = i; S.dir = 1; } render();
+};
+$('#tbody').onclick = e => {
+  const tr = e.target.closest('tr'); if(!tr) return; const key = tr.dataset.key;
+  if(e.target.closest('td.ck')){ const box = tr.querySelector('input'); if(e.target !== box) box.checked = !box.checked; box.checked ? S.sel.add(key) : S.sel.delete(key); tr.classList.toggle('sel', box.checked); return renderBulk(); }
+  openDrawer(key);
+};
+$('#more').onclick = e => { if(e.target.id === 'showall'){ S.limit = 1e6; render(); } };
+
+async function save(keys, fields, done){
+  try {
+    const j = await api('/api/inventory/edit', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({keys, fields})});
+    take(j); toast(j.changed ? `Saved ${j.changed} vehicle${j.changed === 1 ? '' : 's'}.` : 'No changes.'); done && done();
+  } catch(e){ toast(e.message); }
+}
+$('#b-apply').onclick = () => {
+  const f = {};
+  if($('#b-status').value) f.status = $('#b-status').value;
+  if($('#b-cust').value.trim()) f.customer = $('#b-cust').value.trim();
+  if($('#b-loc').value) f.location = $('#b-loc').value === '-' ? '' : $('#b-loc').value;
+  if($('#b-done').value) f.upfit_complete = $('#b-done').value === '1';
+  if(!Object.keys(f).length) return toast('Pick what to change first.');
+  save([...S.sel], f, () => { S.sel.clear(); ['#b-status','#b-cust','#b-loc','#b-done'].forEach(i => $(i).value = ''); render(); });
+};
+$('#b-clear').onclick = () => { S.sel.clear(); render(); };
+
+// ---- drawer
+function openDrawer(key){
+  const u = S.units.find(x => x.key === key); if(!u) return; S.open = key;
+  $('#d-title').textContent = `${u.year || ''} ${u.vline || 'Vehicle'}`;
+  $('#d-sub').textContent = [u.stock && 'Stock ' + u.stock, u.order && 'Order ' + u.order, u.stage].filter(Boolean).join(' · ');
+  $('#d-flags').innerHTML = u.flags.length ? `<div class="note bad">${u.flags.map(esc).join('<br>')}</div>` : '';
+  $('#d-status').innerHTML = '<option value="">Unassigned</option>' + D.statuses.map(s => `<option>${esc(s)}</option>`).join(''); $('#d-status').value = u.status;
+  $('#d-cust').value = u.customer; $('#d-unc').checked = u.unconfirmed;
+  $('#d-loc').innerHTML = '<option value="">None</option>' + D.upfitters.map(s => `<option>${esc(s)}</option>`).join('') + '<option value="+">Add an upfitter…</option>'; $('#d-loc').value = u.location;
+  $('#d-done').checked = u.upfit_complete; $('#d-notes').value = u.notes;
+  const facts = [['VIN', u.vin], ['Body', u.body || u.rep_model], ['Color', u.color], ['Engine', u.engine], ['Wheelbase', u.wheelbase], ['Ford status', [u.fp_primary, u.fp_secondary].filter(Boolean).join(' / ') || (u.fmc_status || '').replace('STOCK', '').toLowerCase()],
+    ['Ford end user', u.end_user], ['Order name', u.cust_ref], ['PO', u.po], ['Ordered', fmtDate(u.order_received)], ['Est. build', fmtDate(u.est_build)], ['Est. arrival week', fmtDate(u.eta_week)],
+    ['Ford Pro delivered', fmtDate(u.delivered)], ['Days in stock', u.days], ['Reported sold', fmtDate(u.sale_date)], ["On Tess's list", u.on_tess ? 'Yes' : 'No'], ['In Ford inventory', u.in_ford_inv ? 'Yes' : 'No']];
+  $('#d-facts').innerHTML = facts.filter(f => f[1] !== '' && f[1] != null).map(f => `<dt>${f[0]}</dt><dd>${esc(f[1])}</dd>`).join('');
+  $('#d-stamp').textContent = u.edited_by ? `Last change: ${u.edited_by}, ${fmtDate(u.edited_at)}` : '';
+  $('#d-hist').innerHTML = '<li class="dim">Loading…</li>';
+  api('/api/inventory/history?key=' + encodeURIComponent(key)).then(j => { if(S.open !== key) return;
+    const names = {status:'Status', customer:'Customer', unconfirmed:'Unconfirmed', location:'Upfitter', upfit_complete:'Upfit complete', notes:'Notes'};
+    const show = v => v === true ? 'yes' : v === false ? 'no' : (v || 'blank');
+    $('#d-hist').innerHTML = j.history.length ? j.history.map(h => `<li><b>${esc(names[h.field] || h.field)}</b>: ${esc(show(h.from))} &rarr; ${esc(show(h.to))}<br>${esc(h.by)}, ${fmtDate(h.at)} ${esc((h.at || '').slice(11,16))}</li>`).join('') : '<li class="dim">No changes made in the dashboard yet.</li>';
+  }).catch(() => {});
+  $('#drawer').classList.add('on'); $('#scrim').classList.add('on');
+}
+function closeDrawer(){ S.open = null; $('#drawer').classList.remove('on'); $('#scrim').classList.remove('on'); }
+$('#d-x').onclick = $('#d-cancel').onclick = $('#scrim').onclick = closeDrawer;
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDrawer(); });
+$('#d-loc').onchange = async e => {
+  if(e.target.value !== '+') return;
+  const name = (prompt('Upfitter name') || '').trim();
+  if(!name){ e.target.value = ''; return; }
+  try { const j = await api('/api/inventory/upfitter', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name})});
+    D.upfitters = j.upfitters; e.target.insertAdjacentHTML('afterbegin', `<option>${esc(name)}</option>`); e.target.value = name; } catch(err){ toast(err.message); e.target.value = ''; }
+};
+$('#d-save').onclick = () => { if(!S.open) return;
+  save([S.open], {status: $('#d-status').value, customer: $('#d-cust').value.trim(), unconfirmed: $('#d-unc').checked, location: $('#d-loc').value === '+' ? '' : $('#d-loc').value, upfit_complete: $('#d-done').checked, notes: $('#d-notes').value.trim()}, closeDrawer); };
+
+// ---- upload
+async function upload(files){
+  const out = $('#upres');
+  for(const f of files){
+    out.insertAdjacentHTML('beforeend', `<div class="note" data-f="${esc(f.name)}">Reading ${esc(f.name)}…</div>`);
+    const box = out.lastElementChild;
+    try {
+      const j = await api('/api/inventory/upload?name=' + encodeURIComponent(f.name), {method: 'POST', body: f});
+      box.className = 'note good'; box.innerHTML = `<b>${esc(f.name)}</b><br>` + j.found.map(x => `${esc(x.label)}: ${x.rows} rows`).join('<br>');
+      take(j);
+    } catch(e){ box.className = 'note bad'; box.innerHTML = `<b>${esc(f.name)}</b><br>${esc(e.message)}`; }
+  }
+}
+$('#file').onchange = e => { upload([...e.target.files]); e.target.value = ''; };
+const drop = $('#drop');
+['dragenter','dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('hot'); }));
+['dragleave','drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('hot'); }));
+drop.addEventListener('drop', e => upload([...e.dataTransfer.files]));
+
+load();
+</script>
+</body>
+</html>
